@@ -1,16 +1,14 @@
-import Hero from "@/components/hero";
-import ConnectSupabaseSteps from "@/components/tutorial/connect-supabase-steps";
-import SignUpUserSteps from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+import AddUrlContainer from "@/components/AddUrlContainer";
+import SearchContainer from "@/components/SearchContainer";
 
-export default async function Index() {
+export default function Index() {
   return (
-    <>
-      <Hero />
-      <main className="flex-1 flex flex-col gap-6 px-4">
-        <h2 className="font-medium text-xl mb-4">Next steps</h2>
-        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-      </main>
-    </>
+    <main className="flex justify-center items-center h-full">
+      <div className="flex gap-x-10 border border-slate-400 rounded-md p-4 h-[500px]">
+        <AddUrlContainer />
+        <div className="w-[2px] bg-white"></div>
+        <SearchContainer />
+      </div>
+    </main>
   );
 }
