@@ -1,10 +1,8 @@
 "use server"
 
-import { revalidatePath } from "next/cache";
 import { generateMarkdownEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 
 export const saveUrl = async (url: string) => {
   const supabase = await createClient();
