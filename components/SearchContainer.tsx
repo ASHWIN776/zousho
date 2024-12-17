@@ -13,9 +13,10 @@ export default function SearchContainer() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const query = formData.get("query") as string;
+    const contentType = formData.get("type") as "all" | "website" | "note";
 
     setStatus("Searching for the query");
-    const results = await searchQuery(query);
+    const results = await searchQuery(query, contentType);
     setStatus(IDLE_STATUS);
 
     if (results) {
@@ -28,8 +29,43 @@ export default function SearchContainer() {
       <span>Search Content Here!</span>
       <form 
         onSubmit={search}
-        className="flex justify-center items-center"
+        className="flex flex-col gap-y-3"
       >
+        <div className="flex gap-x-2">
+          <label htmlFor="">Content Type: </label>
+
+          <div className="flex gap-x-1">
+            <input 
+              type="radio" 
+              name="type" 
+              id="all" 
+              value="all"
+              defaultChecked
+            />
+            <label htmlFor="website">All</label>
+          </div>
+
+          <div className="flex gap-x-1">
+            <input 
+              type="radio" 
+              name="type" 
+              id="website" 
+              value="website"
+            />
+            <label htmlFor="website">Website</label>
+          </div>
+
+          <div className="flex gap-x-1">
+            <input 
+              type="radio" 
+              name="type" 
+              id="note" 
+              value="note" 
+            />
+            <label htmlFor="note">Personal Note</label>
+          </div>
+        </div>
+
         <input
           name="query"
           className="p-4 border border-gray-300 rounded-lg w-96" 
@@ -39,7 +75,7 @@ export default function SearchContainer() {
 
         <button
           disabled={status !== IDLE_STATUS} 
-          className="p-4 bg-blue-500 text-white rounded-lg ml-2 disabled:opacity-40">
+          className="p-4 bg-blue-500 text-white rounded-lg disabled:opacity-40">
           Search
         </button>
       </form>
