@@ -1,12 +1,13 @@
 "use client"
 
-import { saveUrl } from "@/lib/actions";
+import { saveNote, saveUrl } from "@/lib/actions";
 import { IDLE_STATUS } from "@/lib/contants";
 import { Page } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 
 export default function AddUrlContainer() {
+  const [contentType, setContentType] = useState("website");
   const [pages, setPages] = useState<Page[]>([]);
   const [status, setStatus] = useState(IDLE_STATUS);
   const supabase = createClient();
@@ -14,16 +15,39 @@ export default function AddUrlContainer() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const url = formData.get("url") as string;
+    const contentType = formData.get("type") as string;
+    
+    if (contentType === "website") {
+      await handleUrl(formData);
+    } else {
+      await handleNotes(formData);
+    }
 
-    console.log("URL", url);
-
-    if (!url) return;
-    setStatus("Fetching Data and saving to the database");
-
-    await saveUrl(url);
     setStatus(IDLE_STATUS);
     fetchPages();
+  }
+
+  const handleUrl = async (formData: FormData) => {
+    const url = formData.get("url") as string;
+
+    if (!url) return;
+
+    setStatus("Fetching Data and saving to the database");
+    await saveUrl(url);
+  }
+
+  const handleNotes = async (formData: FormData) => {
+    const title = formData.get("title") as string;
+    const note = formData.get("note") as string;
+
+    if (!note || !title) return;
+
+    setStatus("Saving Note to the database");
+    await saveNote(title, note);
+  }
+
+  const onContentTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setContentType(event.target.value);
   }
 
   const fetchPages = async () => {
@@ -46,19 +70,65 @@ export default function AddUrlContainer() {
       <span>Save Content Here!</span>
       <form 
         onSubmit={onSubmit}
-        className="flex justify-center items-center"
+        className="flex flex-col gap-y-3"
       >
-        <input
-          name="url"
-          defaultValue={""}
-          className="p-4 border border-gray-300 rounded-lg w-96" 
-          type="text" 
-          placeholder="Enter URL" 
-        />
+        <div className="flex gap-x-2">
+          <label htmlFor="">Content Type: </label>
+
+          <div className="flex gap-x-1">
+            <input 
+              type="radio" 
+              name="type" 
+              id="website" 
+              value="website" 
+              checked={contentType === "website"} 
+              onChange={onContentTypeChange}
+            />
+            <label htmlFor="website">Website</label>
+          </div>
+
+          <div className="flex gap-x-1">
+            <input 
+              type="radio" 
+              name="type" 
+              id="note" 
+              value="note" 
+              checked={contentType === "note"}
+              onChange={onContentTypeChange} 
+            />
+            <label htmlFor="note">Personal Note</label>
+          </div>
+        </div>
+        
+        {
+          // For website show input field, for note show textarea
+          contentType === "website" ?
+            <input
+              name="url"
+              defaultValue={""}
+              className="p-4 border border-gray-300 rounded-lg w-96" 
+              type="text" 
+              placeholder="Enter URL" 
+            />
+          : 
+          <>
+            <input 
+              name="title"
+              className="p-4 border border-gray-300 rounded-lg"
+              placeholder="Enter Title"
+              type="text"
+            />
+            <textarea 
+              name="note" 
+              className="p-4 border border-gray-300 rounded-lg" 
+              placeholder="Enter Note" 
+            />
+          </>
+        }
 
         <button
           disabled={status !== IDLE_STATUS} 
-          className="p-4 bg-blue-500 text-white rounded-lg ml-2 disabled:opacity-40">
+          className="p-4 bg-blue-500 text-white rounded-lg disabled:opacity-40">
           Submit
         </button>
       </form>

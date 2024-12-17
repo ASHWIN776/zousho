@@ -1,6 +1,6 @@
 "use server"
 
-import { generateMarkdownEmbedding, getEmbedding } from "./generateEmbeddings";
+import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
 
@@ -11,35 +11,49 @@ export const saveUrl = async (url: string) => {
     console.log("Scraping URL: ", url);
     const {title, markdown} = await scrape(url);
     console.log("Scraped URL: ", title);
+
     console.log("Generating embeddings for the markdown");
-    const allEmbeddings = await generateMarkdownEmbedding(markdown);
+
+    const allEmbeddings = await generateTextEmbedding(markdown);
+
     console.log("Embeddings generated");
 
     console.log("Saving the data to the database");
 
-    // Save the embeddings to supabase
-    const { data: pageData, error } = await supabase
-    .from("pages")
-    .insert({
-      name: title,
-      path: url,
+    const { error} = await supabase.rpc("add_page", { 
+      name_input: title, 
+      page_section_data_input: allEmbeddings,
+      type_input: "website",
+      path_input: url, 
     })
-    .select()
 
     if(error) throw error
 
-    console.log("Page Data", pageData);
+    console.log("Embeddings Data added to the database");
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-    const embeddings = allEmbeddings.map((embedding, index) => ({
-      page_id: pageData[0].id,
-      content: embedding.content,
-      embedding: embedding.embedding,
-    }));
+export const saveNote = async (title: string, note: string) => {
+  const supabase = await createClient();
 
-    // Save the embeddings to supabase
-    const { error: embeddingsError } = await supabase.from("page_sections").insert(embeddings)
+  try {
+    console.log("Generating embeddings for the notes");
 
-    if(embeddingsError) throw embeddingsError
+    // Generate embeddings for the title and note
+    const allEmbeddings = await generateTextEmbedding(`#${title} ${note}`);
+    console.log("Embeddings generated");
+    console.log("Saving the data to the database");
+
+    const { error } = await supabase.rpc("add_page", {
+      name_input: title,
+      page_section_data_input: allEmbeddings,
+      type_input: "note",
+      path_input: null
+    })
+
+    if (error) throw error
 
     console.log("Embeddings Data added to the database");
   } catch (error) {
