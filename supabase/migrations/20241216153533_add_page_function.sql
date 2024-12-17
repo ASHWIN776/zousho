@@ -24,8 +24,8 @@ begin
   END IF;
 
   -- Insert page
-  insert into pages (name, path)
-  values (name_input, path_input)
+  insert into pages (name, path, type)
+  values (name_input, path_input, type_input)
   returning id into page_id;
 
   -- Insert page sections 
