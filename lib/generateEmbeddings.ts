@@ -1,11 +1,7 @@
 import { HfInference } from '@huggingface/inference'
-import { TokenTextSplitter } from "langchain/text_splitter";
+import splitter from './splitter';
 
 const hf = new HfInference(process.env.HF_TOKEN)
-const splitter = new TokenTextSplitter({
-  chunkSize: 512,
-  chunkOverlap: 100
-});
 
 export const getEmbedding = async (text: string) => {
   return hf.featureExtraction({
@@ -14,8 +10,8 @@ export const getEmbedding = async (text: string) => {
   });
 }
 
-export const generateMarkdownEmbedding = async (markdown: string) => {
-  const textChunks = await splitter.splitText(markdown);
+export const generateTextEmbedding = async (text: string) => {
+  const textChunks = await splitter.splitText(text);
 
   const processedData = await Promise.all(
     textChunks.map(async (chunk) => {
