@@ -1,0 +1,1 @@
+drop function if exists get_matched_pages(vector(1024), int);

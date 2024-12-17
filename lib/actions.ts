@@ -61,7 +61,7 @@ export const saveNote = async (title: string, note: string) => {
   }
 }
 
-export const searchQuery = async (query: string) => {
+export const searchQuery = async (query: string, page_type: "all" | "website" | "note") => {
   const supabase = await createClient();
 
   try {
@@ -72,7 +72,8 @@ export const searchQuery = async (query: string) => {
 
     const { data, error } = await supabase.rpc("get_matched_pages", {
       query_embedding: embeddings,
-      match_limit: 5
+      match_limit: 5,
+      ...(page_type !== "all" ? { type_input: page_type } : {})
     }).returns<{name: string, path: string, max_similarity: number}[]>();
 
     if(error) throw error
