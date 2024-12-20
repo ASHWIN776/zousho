@@ -87,7 +87,7 @@ export default function SearchContainer() {
             searchResults.map((page, index) => (
               <a
                 key={index} 
-                href={page.path}>{index + 1}. {page.name} - {page.max_similarity.toFixed(2)}</a>
+                href={page.path}>{page.id}. {page.name} - {page.max_similarity.toFixed(2)}</a>
             ))
           }
         </div>

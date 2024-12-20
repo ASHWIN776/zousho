@@ -5,6 +5,7 @@ export interface Page {
 }
 
 export interface ResultType {
+  id: number;
   name: string;
   path: string;
   max_similarity: number;

@@ -74,7 +74,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
-    }).returns<{name: string, path: string, max_similarity: number}[]>();
+    }).returns<{id: number, name: string, path: string, max_similarity: number}[]>();
 
     if(error) throw error
 
