@@ -8,7 +8,8 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
-  const lastMessage = messages[0].content
+  console.log("Messages: ", messages)
+  const lastMessage = messages.at(-1).content
 
   console.log("Prompt of the user: ", lastMessage)
   const contextList = await searchPageSections(lastMessage, "all");
