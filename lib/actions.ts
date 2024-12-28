@@ -1,6 +1,5 @@
 "use server"
 
-import formatKnowledgeBase from "./formatData";
 import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
