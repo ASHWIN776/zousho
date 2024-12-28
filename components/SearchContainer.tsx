@@ -25,7 +25,7 @@ export default function SearchContainer() {
   }
 
   return (
-    <div className="grow flex flex-col gap-y-4">
+    <div className="w-[483px] flex flex-col gap-y-4">
       <span>Search Content Here!</span>
       <form 
         onSubmit={search}
@@ -38,37 +38,37 @@ export default function SearchContainer() {
             <input 
               type="radio" 
               name="type" 
-              id="all" 
+              id="search_all" 
               value="all"
               defaultChecked
             />
-            <label htmlFor="website">All</label>
+            <label htmlFor="search_all">All</label>
           </div>
 
           <div className="flex gap-x-1">
             <input 
               type="radio" 
               name="type" 
-              id="website" 
+              id="search_website" 
               value="website"
             />
-            <label htmlFor="website">Website</label>
+            <label htmlFor="search_website">Website</label>
           </div>
 
           <div className="flex gap-x-1">
             <input 
               type="radio" 
               name="type" 
-              id="note" 
+              id="search_note" 
               value="note" 
             />
-            <label htmlFor="note">Personal Note</label>
+            <label htmlFor="search_note">Personal Note</label>
           </div>
         </div>
 
         <input
           name="query"
-          className="p-4 border border-gray-300 rounded-lg w-96" 
+          className="p-4 border border-gray-300 rounded-lg" 
           type="text" 
           placeholder="Search" 
         />
