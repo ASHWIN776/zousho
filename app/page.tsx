@@ -1,5 +1,6 @@
 import AddUrlContainer from "@/components/AddUrlContainer";
 import SearchContainer from "@/components/SearchContainer";
+import Link from "next/link";
 
 export default function Index() {
   return (
@@ -10,6 +11,11 @@ export default function Index() {
         <div className="w-[2px] bg-white"></div>
         <SearchContainer />
       </div>
+      <Link href="/chat">
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Chat with all your knowledge! 🤖
+        </button>
+      </Link>
     </main>
   );
 }

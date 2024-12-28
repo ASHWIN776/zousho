@@ -66,7 +66,7 @@ export default function AddUrlContainer() {
   }, []);
 
   return (
-    <div className="grow flex flex-col gap-y-4">
+    <div className="w-[483px] flex flex-col gap-y-4">
       <span>Save Content Here!</span>
       <form 
         onSubmit={onSubmit}
@@ -106,7 +106,7 @@ export default function AddUrlContainer() {
             <input
               name="url"
               defaultValue={""}
-              className="p-4 border border-gray-300 rounded-lg w-96" 
+              className="p-4 border border-gray-300 rounded-lg" 
               type="text" 
               placeholder="Enter URL" 
             />
