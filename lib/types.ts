@@ -10,3 +10,8 @@ export interface ResultType {
   path: string;
   max_similarity: number;
 }
+
+export interface NoteContext {
+  content: string;
+  similarity: number;
+}

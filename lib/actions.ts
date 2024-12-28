@@ -1,5 +1,6 @@
 "use server"
 
+import formatKnowledgeBase from "./formatData";
 import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
@@ -82,5 +83,36 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
     
   } catch (error) {
     console.error(error);
+  }
+}
+
+export const searchPageSections = async (query: string, page_type: "all" | "website" | "note") => {
+  const supabase = await createClient();
+
+  try {
+    console.log("Get Vectors for the search query")
+    const embeddings = await getEmbedding(query);
+
+    console.log("Searching for similar embeddings in the database");
+
+    const { data, error } = await supabase.rpc("get_matched_page_sections", {
+      query_embedding: embeddings,
+      match_limit: 5,
+      ...(page_type !== "all" ? { type_input: page_type } : {})
+    }).returns<{
+      page_id: number,
+      section_id: number,
+      section_content: string,
+      similarity: number
+    }[]>();
+
+    if (error) throw error
+
+    return data.map(({ section_content, similarity }) => ({
+      content: section_content,
+      similarity
+    }))
+  } catch (error) {
+    console.error("Error in searchPageSections: ", error); 
   }
 }
