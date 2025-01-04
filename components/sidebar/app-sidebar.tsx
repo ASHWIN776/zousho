@@ -11,7 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
+import Item from "./Item"
 
 // Menu items.
 const items = [
@@ -33,6 +34,15 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
+            <SidebarMenuButton
+              className="text-md text-center"
+            asChild>
+              <span>Recall</span>  
+            </SidebarMenuButton>  
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <SidebarMenu>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Add">
               <Button variant="outline" className="w-full group-data-[collapsible=icon]:w-8 bg-foreground text-background">
                 <Plus className="shrink-0" />
@@ -48,14 +58,12 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <Item 
+                  key={item.title} 
+                  title={item.title}
+                  url={item.url}
+                  icon={<item.icon />}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>

@@ -3,6 +3,7 @@
 import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
+import { Page } from "./types";
 
 export const saveUrl = async (url: string) => {
   const supabase = await createClient();
@@ -21,10 +22,11 @@ export const saveUrl = async (url: string) => {
     console.log("Saving the data to the database");
 
     const { error} = await supabase.rpc("add_page", { 
-      name_input: title, 
+      name_input: title,
+      page_content: markdown, 
       page_section_data_input: allEmbeddings,
       type_input: "website",
-      path_input: url, 
+      path_input: url
     })
 
     if(error) throw error
@@ -48,6 +50,7 @@ export const saveNote = async (title: string, note: string) => {
 
     const { error } = await supabase.rpc("add_page", {
       name_input: title,
+      page_content: note,
       page_section_data_input: allEmbeddings,
       type_input: "note",
       path_input: null
@@ -113,5 +116,20 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
     }))
   } catch (error) {
     console.error("Error in searchPageSections: ", error); 
+  }
+}
+
+export const fetchPages = async () => {
+  const supabase = await createClient();
+
+  try {
+    const { data: pages, error } = await supabase.from("pages").select().returns<Page[]>();
+
+    if (error) throw error
+
+    return pages
+  } catch (error) {
+    console.error(error);
+    return []
   }
 }

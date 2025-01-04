@@ -1,21 +1,32 @@
-import AddUrlContainer from "@/components/AddUrlContainer";
-import SearchContainer from "@/components/SearchContainer";
-import Link from "next/link";
+import Results from "@/components/ResourceResults";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export default function Index() {
   return (
-    <main className="flex flex-col gap-y-6 justify-center items-center h-full">
-      <span className="text-3xl">Recall It Back!</span>
-      <div className="flex gap-x-10 border border-slate-400 rounded-md p-4 h-[500px] w-[1000px]">
-        <AddUrlContainer />
-        <div className="w-[2px] bg-white"></div>
-        <SearchContainer />
+    <div className="flex-1 mx-auto px-4 py-8 w-[937.438px]">
+    <div className="space-y-8 text-white">
+      <h1 className="text-4xl font-semibold">
+        <span className="bg-gradient-to-r text-foreground">Library</span>
+      </h1>
+
+      {/* Search Form */}
+      <div className="flex space-x-4">
+        <Input 
+          type="text" 
+          placeholder="Search your knowledge" 
+          className="flex-grow dark:bg-zinc-800/50 dark:border-zinc-700"
+        />
+        <Button className="bg-foreground hover:bg-blue-700">
+          <Search className="w-4 h-4" />
+          Search
+        </Button>
       </div>
-      <Link href="/chat">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Chat with all your knowledge! 🤖
-        </button>
-      </Link>
-    </main>
+
+      {/* Search Results */}
+      <Results />
+    </div>
+  </div>
   );
 }
