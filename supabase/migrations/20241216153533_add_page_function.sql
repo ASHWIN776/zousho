@@ -7,6 +7,7 @@ create type page_section_data as (
 
 create or replace function add_page (
   name_input text,
+  page_content text,
   page_section_data_input page_section_data[],
   type_input page_type,
   path_input text
@@ -24,8 +25,8 @@ begin
   END IF;
 
   -- Insert page
-  insert into pages (name, path, type)
-  values (name_input, path_input, type_input)
+  insert into pages (name, path, type, content)
+  values (name_input, path_input, type_input, page_content)
   returning id into page_id;
 
   -- Insert page sections 
