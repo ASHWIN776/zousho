@@ -11,8 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Button } from "../ui/button"
 import Item from "./Item"
+import { AddContentDialog } from "./AddContentDialog"
 
 // Menu items.
 const items = [
@@ -43,12 +43,7 @@ export function AppSidebar() {
         </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Add">
-              <Button variant="outline" className="w-full group-data-[collapsible=icon]:w-8 bg-foreground text-background">
-                <Plus className="shrink-0" />
-                <span className="group-data-[collapsible=icon]:hidden">Add</span>
-              </Button>
-            </SidebarMenuButton>
+            <AddContentDialog />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
