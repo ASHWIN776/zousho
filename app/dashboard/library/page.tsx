@@ -1,9 +1,20 @@
-import Results from "@/components/ResourceResults";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import Results from "@/components/library/ResourceResults";
+import SearchForm from "@/components/library/SearchForm";
+import { ContentType } from "@/lib/types";
 
-export default function Index() {
+interface SearchParamsType {
+  query?: string;
+  type?: string
+}
+
+export default async function Page({
+  searchParams
+}: {
+  searchParams: Promise<SearchParamsType>
+}) {
+  const query = (await searchParams)?.query;
+  const type = ((await searchParams)?.type ?? "all") as ContentType;
+
   return (
     <div className="flex-1 mx-auto px-4 py-8 w-[937.438px]">
     <div className="space-y-8 text-white">
@@ -12,20 +23,13 @@ export default function Index() {
       </h1>
 
       {/* Search Form */}
-      <div className="flex space-x-4">
-        <Input 
-          type="text" 
-          placeholder="Search your knowledge" 
-          className="flex-grow dark:bg-zinc-800/50 dark:border-zinc-700"
-        />
-        <Button className="bg-foreground hover:bg-blue-700">
-          <Search className="w-4 h-4" />
-          Search
-        </Button>
-      </div>
+      <SearchForm />
 
       {/* Search Results */}
-      <Results />
+      <Results 
+        query={query}
+        type={type}
+      />
     </div>
   </div>
   );

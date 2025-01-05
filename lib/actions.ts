@@ -3,7 +3,7 @@
 import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
-import { Page } from "./types";
+import { ContentType, Page } from "./types";
 
 export const saveUrl = async (url: string) => {
   const supabase = await createClient();
@@ -85,6 +85,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
     
   } catch (error) {
     console.error(error);
+    return []
   }
 }
 
@@ -119,11 +120,17 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
   }
 }
 
-export const fetchPages = async () => {
+export const fetchPages = async (type: ContentType) => {
   const supabase = await createClient();
 
   try {
-    const { data: pages, error } = await supabase.from("pages").select().returns<Page[]>();
+    const page_type = type === "all" ? ["website", "note"] : [type];
+
+    const { data: pages, error } = await supabase
+    .from("pages")
+    .select()
+    .in("type", page_type)
+    .returns<Page[]>();
 
     if (error) throw error
 

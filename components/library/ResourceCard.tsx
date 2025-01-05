@@ -1,17 +1,21 @@
 import { ExternalLink, Plus } from "lucide-react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
 import Link from "next/link";
 
 interface Props {
   title: string;
   path: string | null;
+  similarity: number | null; 
 }
 
 export default function ResourceCard({
   title,
   path,
+  similarity
 }: Props) {
+  const similarityPercentage = similarity ? (similarity * 100).toFixed(2) : undefined;
+
   return (
     <Card className="p-6 dark:bg-zinc-800/50 dark:border-zinc-700 transition-colors rounded-md">
       <div className="flex items-start space-x-4">
@@ -27,10 +31,15 @@ export default function ResourceCard({
           </div>
           <p className="text-xs text-zinc-300 mb-2">{new Date().toLocaleDateString()}</p>
           <p className="text-xs text-zinc-400 mb-4">Genre</p>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-400">{
+              similarityPercentage ? 
+              `${similarityPercentage}% match` : 
+              undefined
+            }</span>
             <Button className="bg-foreground text-xs">
               <Plus /> 
-              Search Group
+              Chat Group
             </Button>
           </div>
         </div>
