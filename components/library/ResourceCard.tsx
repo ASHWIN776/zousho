@@ -2,18 +2,15 @@ import { ExternalLink, Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import Link from "next/link";
+import { Page } from "@/lib/types";
+import { format } from 'date-fns'
 
 interface Props {
-  title: string;
-  path: string | null;
-  similarity: number | null; 
+  page: Page
 }
 
-export default function ResourceCard({
-  title,
-  path,
-  similarity
-}: Props) {
+export default function ResourceCard({ page }: Props) {
+  const { name: title, path, max_similarity: similarity, created_at } = page;
   const similarityPercentage = similarity ? (similarity * 100).toFixed(2) : undefined;
 
   return (
@@ -29,7 +26,7 @@ export default function ResourceCard({
               <ExternalLink className="w-3 h-3 text-zinc-400" />
             </Link>
           </div>
-          <p className="text-xs text-zinc-300 mb-2">{new Date().toLocaleDateString()}</p>
+          <p className="text-xs text-zinc-300 mb-2">{format(created_at, 'MMMM d, yyyy')}</p>
           <p className="text-xs text-zinc-400 mb-4">Genre</p>
         </div>
         <div className="flex items-center justify-between">

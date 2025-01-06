@@ -18,9 +18,7 @@ export default async function ResourceResults({
     {pages.map((page, index) => (
       <ResourceCard 
         key={index}
-        title={page.name}
-        path={page.path}
-        similarity={page.max_similarity}
+        page={page}
       />
     ))}
   </div>

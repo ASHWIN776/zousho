@@ -97,7 +97,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
-    }).returns<{id: number, name: string, path: string, max_similarity: number}[]>();
+    }).returns<Page[]>();
 
     if(error) throw error
 
