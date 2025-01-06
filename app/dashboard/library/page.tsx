@@ -1,6 +1,8 @@
 import Results from "@/components/library/ResourceResults";
 import SearchForm from "@/components/library/SearchForm";
+import ResultSkeleton from "@/components/skeleton/ResultSkeleton";
 import { ContentType } from "@/lib/types";
+import { Suspense } from "react";
 
 interface SearchParamsType {
   query?: string;
@@ -26,10 +28,12 @@ export default async function Page({
       <SearchForm />
 
       {/* Search Results */}
-      <Results 
-        query={query}
-        type={type}
-      />
+      <Suspense
+        key={query + type}
+        fallback={<ResultSkeleton />}
+      >
+        <Results query={query} type={type} />
+      </Suspense>
     </div>
   </div>
   );
