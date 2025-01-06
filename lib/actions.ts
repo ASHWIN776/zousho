@@ -3,7 +3,7 @@
 import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
-import { ContentType, Page } from "./types";
+import { ActionResponse, ContentType, Page } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 
@@ -11,7 +11,7 @@ const revalidateLibrary = () => {
   revalidatePath('/dashboard/library');
 }
 
-export const saveUrl = async (url: string) => {
+export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
 
   try {
@@ -27,32 +27,44 @@ export const saveUrl = async (url: string) => {
 
     console.log("Saving the data to the database");
 
-    const { error } = await supabase.rpc("add_page", { 
+    const { data: pageId, error: addPageError } = await supabase.rpc("add_page", { 
       name_input: title,
       page_content: markdown, 
       page_section_data_input: allEmbeddings,
       type_input: "website",
       path_input: url
     })
+    .returns<number>();
 
-    if(error) throw error
+    if(addPageError) throw addPageError
 
     console.log("Embeddings Data added to the database");
 
+    const { data: page, error: getPageError } = await supabase
+    .from("pages")
+    .select()
+    .eq("id", pageId)
+    .returns<Page[]>();
+
+    if (getPageError) throw getPageError
+
     revalidateLibrary();
+
+    return {
+      data: page[0],
+      error: null
+    }
   } catch (error) {
     console.error(error);
     
-    // Check if the error is a PostgrestError
-    if (typeof error === "string") {
-      throw error
-    } else {
-      throw (error as PostgrestError).message
+    return {
+      data: null,
+      error: typeof error === "string" ? error : (error as PostgrestError).message
     }
   }
 }
 
-export const saveNote = async (title: string, note: string) => {
+export const saveNote = async (title: string, note: string): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
 
   try {
@@ -63,24 +75,39 @@ export const saveNote = async (title: string, note: string) => {
     console.log("Embeddings generated");
     console.log("Saving the data to the database");
 
-    const { error } = await supabase.rpc("add_page", {
+    const { data: pageId, error: addPageError } = await supabase.rpc("add_page", {
       name_input: title,
       page_content: note,
       page_section_data_input: allEmbeddings,
       type_input: "note",
       path_input: null
     })
+    .returns<number>();
 
-    if (error) throw error
+    if (addPageError) throw addPageError
 
     console.log("Embeddings Data added to the database");
 
+    const { data: page, error: getPageError } = await supabase
+    .from("pages")
+    .select()
+    .eq("id", pageId)
+    .returns<Page[]>();
+
+    if (getPageError) throw getPageError
     revalidateLibrary();
+
+    return {
+      data: page[0],
+      error: null
+    }
   } catch (error) {
     console.error(error);
 
-    // Check if the error is a PostgrestError
-    throw error;
+    return {
+      data: null,
+      error: typeof error === "string" ? error : (error as PostgrestError).message
+    }
   }
 }
 
@@ -150,6 +177,7 @@ export const fetchPages = async (type: ContentType) => {
     .from("pages")
     .select()
     .in("type", page_type)
+    .order("created_at", { ascending: false })
     .returns<Page[]>();
 
     if (error) throw error

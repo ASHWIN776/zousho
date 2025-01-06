@@ -22,58 +22,65 @@ import { Loader2, Plus } from 'lucide-react'
 import { SidebarMenuButton } from '../ui/sidebar'
 import { saveNote, saveUrl } from '@/lib/actions'
 import { ContentType } from '@/lib/types'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 export function AddContentDialog() {
   const [contentType, setContentType] = useState<'website' | 'note'>('website')
   const [isLoading, setIsLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const { toast } = useToast()
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
+  const getFormValues = (formData: FormData) => {
     const contentType = formData.get("type") as ContentType;
-
-    console.log(contentType);
-    setIsLoading(true);
-
-    try {
-      if (contentType === "website") {
-        await handleUrl(formData);
-      } else {
-        await handleNotes(formData);
-      }
-
-      setOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Something went wrong',
-        description: (error as Error).message,
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const handleUrl = async (formData: FormData) => {
     const url = formData.get("url") as string;
-
-    if(url){
-      await saveUrl(url);
-    }
-  }
-
-  const handleNotes = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const note = formData.get("note") as string;
 
-    console.log(title, note);
+    return { contentType, url, title, note }
+  }
 
-    if(note && title){
-      await saveNote(title, note);
+  const assertInputs = (formData: FormData): boolean => {
+    const { contentType, url, title, note } = getFormValues(formData);
+
+    if (contentType === "website" && !url) {
+      toast.error("Please enter a valid URL");
+      return false;
+    } else if (contentType === "note" && (!title || !note)) {
+      toast.error("Please enter both title and note");
+      return false;
+    }
+
+    return true;
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    if (!assertInputs(formData)) return;
+    setIsLoading(true);
+
+    const {data, error} = await handleContent(formData);
+
+    setIsLoading(false);
+    if(error) {
+      toast.error(error);
+    } else {
+      setOpen(false);
+      toast.success(
+        <span>
+          <span className='font-bold'>{data!.name}</span> has been added to your library
+        </span>
+      )
+    }
+  }
+
+  const handleContent = async (formData: FormData) => {
+    const { contentType, url, title, note } = getFormValues(formData);
+
+    if (contentType === "website") {
+      return saveUrl(url);
+    } else {
+      return saveNote(title, note);
     }
   }
 

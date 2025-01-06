@@ -12,7 +12,7 @@ create or replace function add_page (
   type_input page_type,
   path_input text
 ) 
-returns void as 
+returns bigint as 
 $$
 declare
   section_data page_section_data;
@@ -35,6 +35,7 @@ begin
     insert into page_sections (page_id, content, embedding)
     values (page_id, section_data.content, section_data.embedding);
   end loop;
-  
+
+  return page_id;
 end;
 $$ language plpgsql;

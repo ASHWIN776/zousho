@@ -19,3 +19,8 @@ export interface NoteContext {
   content: string;
   similarity: number;
 }
+
+export interface ActionResponse<T>{
+  data: T;
+  error: string | null;
+}

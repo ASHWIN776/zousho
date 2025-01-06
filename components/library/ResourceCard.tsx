@@ -4,6 +4,7 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import { Page } from "@/lib/types";
 import { format } from 'date-fns'
+import { formatTitle } from "@/lib/helper";
 
 interface Props {
   page: Page
@@ -18,7 +19,7 @@ export default function ResourceCard({ page }: Props) {
       <div className="flex flex-col justify-between h-full">
         <div>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-md font-semibold text-secondary-foreground">{title}</span>
+            <span className="text-md font-semibold text-secondary-foreground">{formatTitle(title)}</span>
             <Link
               href={path ?? "#"} 
               target="_blank"
