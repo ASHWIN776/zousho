@@ -11,8 +11,8 @@ language plpgsql
 as $$
 #variable_conflict use_column
 begin
-  return query  select pages.id, name, path, MAX(1 - (embedding <=> query_embedding)), pages.created_at AS 
-  max_similarity
+  return query  select pages.id, name, path, MAX(1 - (embedding <=> query_embedding)) AS 
+  max_similarity, pages.created_at
   from pages
   JOIN page_sections
   ON pages.id = page_sections.page_id
