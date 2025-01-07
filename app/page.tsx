@@ -4,8 +4,7 @@ import Link from "next/link";
 
 export default function Index() {
   return (
-    <main className="flex flex-col gap-y-6 justify-center items-center h-full">
-      <span className="text-3xl">Recall It Back!</span>
+    <main className="flex flex-col justify-center items-center h-full">
       <div className="flex gap-x-10 border border-slate-400 rounded-md p-4 h-[500px] w-[1000px]">
         <AddUrlContainer />
         <div className="w-[2px] bg-white"></div>

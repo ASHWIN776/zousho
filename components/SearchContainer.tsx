@@ -2,11 +2,11 @@
 
 import { searchQuery } from "@/lib/actions";
 import { IDLE_STATUS } from "@/lib/contants";
-import { ResultType } from "@/lib/types";
+import { Page } from "@/lib/types";
 import React, { useState } from "react";
 
 export default function SearchContainer() {
-  const [searchResults, setSearchResults] = useState<ResultType[]>([]);
+  const [searchResults, setSearchResults] = useState<Page[]>([]);
   const [status, setStatus] = useState(IDLE_STATUS);
 
   const search = async (event: React.FormEvent<HTMLFormElement>) => {

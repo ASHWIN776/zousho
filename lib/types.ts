@@ -1,7 +1,11 @@
+export type ContentType = "all" | "website" | "note";
+
 export interface Page {
   id: string;
   name: string;
-  path: string
+  path: string;
+  max_similarity: number | number;
+  created_at: string;
 }
 
 export interface ResultType {
@@ -14,4 +18,9 @@ export interface ResultType {
 export interface NoteContext {
   content: string;
   similarity: number;
+}
+
+export interface ActionResponse<T>{
+  data: T;
+  error: string | null;
 }
