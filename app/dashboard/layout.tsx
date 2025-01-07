@@ -5,11 +5,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="grow">
+      <main className="grow flex flex-col">
         <SidebarTrigger />
-        <SidebarInset>
+        <div className="grow">
           {children}
-        </SidebarInset>
+        </div>
       </main>
     </SidebarProvider>
   )
