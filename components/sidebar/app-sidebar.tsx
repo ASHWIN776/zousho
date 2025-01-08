@@ -74,7 +74,7 @@ export function AppSidebar() {
             appearance={{
               elements: {
                 userButtonBox: "flex flex-row-reverse items-center gap-x-1",
-                userButtonOuterIdentifier: "group-data-[collapsible=icon]:hidden"
+                userButtonOuterIdentifier: "group-data-[collapsible=icon]:hidden text-base"
               }
             }}
           />
