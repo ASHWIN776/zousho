@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {currentUser} from "@clerk/nextjs/server"
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { MoveRight } from "lucide-react";
 
 export default async function Index() {
   return (
@@ -15,7 +16,10 @@ export default async function Index() {
       </div>
       <SignedIn>
         <Link href="/dashboard">
-          <Button>Try the App</Button>
+          <Button>
+            Try the App
+            <MoveRight />
+          </Button>
         </Link>
       </SignedIn>
       <SignedOut>

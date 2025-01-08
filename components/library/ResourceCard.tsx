@@ -36,7 +36,10 @@ export default function ResourceCard({ page }: Props) {
             `${similarityPercentage}% match` : 
             undefined
           }</span>
-          <Button className="bg-foreground text-xs">
+          <Button 
+            className="bg-foreground text-xs"
+            disabled
+          >
             <Plus /> 
             Chat Group
           </Button>
