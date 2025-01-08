@@ -199,3 +199,33 @@ export const fetchPages = async (type: ContentType) => {
     return []
   }
 }
+
+export const deletePage = async (pageId: string): Promise<ActionResponse<Page | null>> => {
+  const supabase = await createClient();
+  const { userId } = await auth()
+
+  try {
+    const { data, error } = await supabase
+    .from("pages")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", pageId)
+    .select()
+    .returns<Page[]>();
+
+    if (error) throw error
+    
+    revalidateLibrary();
+    
+    return {
+      data: data[0],
+      error: null
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      data: null,
+      error: typeof error === "string" ? error : (error as PostgrestError).message
+    }
+  }
+}
