@@ -90,10 +90,10 @@ export function AddContentDialog() {
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <SidebarMenuButton className="hover:bg-primary/90 hover:text-primary-foreground" asChild tooltip="Add">
+        <SidebarMenuButton className="hover:bg-primary/90 hover:text-primary-foreground" asChild tooltip="Add Content">
           <Button className="w-full group-data-[collapsible=icon]:w-8 bg-foreground text-background">
             <Plus className="shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden">Add</span>
+            <span className="group-data-[collapsible=icon]:hidden">Add Content</span>
           </Button>
         </SidebarMenuButton>
       </DialogTrigger>

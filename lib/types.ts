@@ -4,7 +4,7 @@ export interface Page {
   id: string;
   name: string;
   path: string;
-  max_similarity: number | number;
+  max_similarity: number | null;
   created_at: string;
 }
 
