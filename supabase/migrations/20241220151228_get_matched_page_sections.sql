@@ -1,4 +1,5 @@
 create or replace function get_matched_page_sections(
+  user_id_input text,
   query_embedding vector(1024),
   match_limit int,
   type_input page_type DEFAULT NULL
@@ -11,7 +12,7 @@ begin
   from pages 
   JOIN page_sections
   ON pages.id = page_sections.page_id
-  WHERE 1 = 1
+  WHERE pages.user_id = user_id_input
     AND (type_input IS NULL OR pages.type = type_input)
   ORDER BY similarity DESC
   limit match_limit;

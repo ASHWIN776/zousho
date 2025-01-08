@@ -1,20 +1,33 @@
-import AddUrlContainer from "@/components/AddUrlContainer";
-import SearchContainer from "@/components/SearchContainer";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import {currentUser} from "@clerk/nextjs/server"
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
-export default function Index() {
+export default async function Index() {
   return (
-    <main className="flex flex-col justify-center items-center h-full">
-      <div className="flex gap-x-10 border border-slate-400 rounded-md p-4 h-[500px] w-[1000px]">
-        <AddUrlContainer />
-        <div className="w-[2px] bg-white"></div>
-        <SearchContainer />
+    <main className="flex flex-col justify-center items-center h-full gap-y-5">
+      <div className="flex flex-col justify-center items-center gap-y-1">
+        <span className="text-9xl">Recall</span>
+        <div className="text-zinc-400 text-md flex flex-col items-center">
+          <span>Document your learnings easily</span>
+          <span>Recall it whenever you need!</span>
+        </div>
       </div>
-      <Link href="/chat">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Chat with all your knowledge! 🤖
-        </button>
-      </Link>
+      <SignedIn>
+        <Link href="/dashboard">
+          <Button>Try the App</Button>
+        </Link>
+      </SignedIn>
+      <SignedOut>
+        <div className="flex gap-x-3">
+          <Link href="/sign-in">
+            <Button variant="outline">Sign In</Button>
+          </Link>
+          <Link href="/sign-up">
+            <Button>Sign Up</Button>
+          </Link>
+        </div>
+      </SignedOut>
     </main>
   );
 }

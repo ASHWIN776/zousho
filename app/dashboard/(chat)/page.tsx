@@ -10,31 +10,33 @@ export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
   return (
     <div className="flex flex-col w-[937.438px] mx-auto justify-between h-full max-h-[calc(100vh_-_28px)]  gap-y-6">
-      <div className="grow overflow-y-auto">
+      <div className="grow overflow-y-auto pr-3">
         {
           messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center h-full">
 
-              <span className="text-2xl font-semibold mb-2">Talk to your Memory!</span>
-              <p className="text-gray-400 max-w-md">
+              <span className="text-3xl font-semibold mb-2">Talk to your Memory!</span>
+              <p className="text-gray-400 text-md max-w-md">
                 Start a conversation by typing a message in the box below. 
                 Your chat history will appear here.
               </p>
             </div>
           )
           :
-            messages.map(message => (
-              <div key={message.id} className="whitespace-pre-wrap">
-                <div>
-                  <div className="font-bold text-secondary-foreground">{message.role === "user" ? "User: " : "AI: "}</div>
-                  <ReactMarkdown>
-                    {message.content.length > 0 ? (
-                      message.content
-                    ) : undefined}
-                  </ReactMarkdown>
+            <div className="flex flex-col gap-y-4">
+              {messages.map(message => (
+                <div key={message.id} className="whitespace-pre-wrap">
+                  <div className={`${message.role !== "user" ? "border rounded-md p-4 bg-sidebar" : ""}`}>
+                    <div className="font-bold text-secondary-foreground">{message.role === "user" ? "User: " : "AI: "}</div>
+                    <ReactMarkdown>
+                      {message.content.length > 0 ? (
+                        message.content
+                      ) : undefined}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
         }
       </div>
 
