@@ -3,6 +3,7 @@ import { Calendar, Library, Bot, Search, Settings, Plus } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/sidebar"
 import Item from "./Item"
 import { AddContentDialog } from "./AddContentDialog"
+import { UserButton } from "@clerk/nextjs"
+import Link from "next/link"
 
 // Menu items.
 const items = [
@@ -32,15 +35,15 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="text-md text-center"
-            asChild>
-              <span>Recall</span>  
-            </SidebarMenuButton>  
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="text-center py-4">
+          <Link
+            href="/"
+            className="text-lg text-center"
+          >
+            <span>R</span>
+            <span className="group-data-[collapsible=icon]:hidden">ecall</span>
+          </Link>  
+        </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <AddContentDialog />
@@ -64,6 +67,19 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="py-1">
+          <UserButton 
+            showName
+            appearance={{
+              elements: {
+                userButtonBox: "flex flex-row-reverse items-center gap-x-1",
+                userButtonOuterIdentifier: "group-data-[collapsible=icon]:hidden"
+              }
+            }}
+          />
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }

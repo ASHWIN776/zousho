@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { ActionResponse, ContentType, Page } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
+import { auth } from '@clerk/nextjs/server'
 
 const revalidateLibrary = () => {
   revalidatePath('/dashboard/library');
@@ -13,6 +14,7 @@ const revalidateLibrary = () => {
 
 export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
+  const { userId } = await auth()
 
   try {
     console.log("Scraping URL: ", url);
@@ -28,6 +30,7 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
     console.log("Saving the data to the database");
 
     const { data: pageId, error: addPageError } = await supabase.rpc("add_page", { 
+      user_id_input: userId,
       name_input: title,
       page_content: markdown, 
       page_section_data_input: allEmbeddings,
@@ -66,6 +69,7 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
 
 export const saveNote = async (title: string, note: string): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
+  const { userId } = await auth()
 
   try {
     console.log("Generating embeddings for the notes");
@@ -76,6 +80,7 @@ export const saveNote = async (title: string, note: string): Promise<ActionRespo
     console.log("Saving the data to the database");
 
     const { data: pageId, error: addPageError } = await supabase.rpc("add_page", {
+      user_id_input: userId,
       name_input: title,
       page_content: note,
       page_section_data_input: allEmbeddings,
@@ -113,6 +118,7 @@ export const saveNote = async (title: string, note: string): Promise<ActionRespo
 
 export const searchQuery = async (query: string, page_type: "all" | "website" | "note") => {
   const supabase = await createClient();
+  const { userId } = await auth()
 
   try {
     console.log("Get Vectors for the search query")
@@ -121,6 +127,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
     console.log("Searching for similar embeddings in the database");
 
     const { data, error } = await supabase.rpc("get_matched_pages", {
+      user_id_input: userId,
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
@@ -138,6 +145,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
 
 export const searchPageSections = async (query: string, page_type: "all" | "website" | "note") => {
   const supabase = await createClient();
+  const { userId } = await auth()
 
   try {
     console.log("Get Vectors for the search query")
@@ -146,6 +154,7 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
     console.log("Searching for similar embeddings in the database");
 
     const { data, error } = await supabase.rpc("get_matched_page_sections", {
+      user_id_input: userId,
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
@@ -169,6 +178,7 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
 
 export const fetchPages = async (type: ContentType) => {
   const supabase = await createClient();
+  const { userId } = await auth()
 
   try {
     const page_type = type === "all" ? ["website", "note"] : [type];
@@ -176,6 +186,7 @@ export const fetchPages = async (type: ContentType) => {
     const { data: pages, error } = await supabase
     .from("pages")
     .select()
+    .eq("user_id", userId)
     .in("type", page_type)
     .order("created_at", { ascending: false })
     .returns<Page[]>();
