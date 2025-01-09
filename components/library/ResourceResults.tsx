@@ -16,7 +16,7 @@ export default async function ResourceResults({
 }: Props) {
   const pages = query ? await searchQuery(query, type) : await fetchPages(type);
 
-  // If there are no pages in the
+  // If there are no pages in the library
   if(pages.length === 0) {
     return (
       <div className="text-center text-white">
