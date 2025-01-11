@@ -18,7 +18,7 @@ export default async function Page({
   const type = ((await searchParams)?.type ?? "all") as ContentType;
 
   return (
-    <div className="flex-1 mx-auto px-4 py-8 w-[937.438px]">
+    <div className="flex-1 px-4 py-8">
     <div className="space-y-8 text-white">
       <h1 className="text-4xl font-semibold">
         <span className="bg-gradient-to-r text-foreground">Library</span>

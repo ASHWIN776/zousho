@@ -34,7 +34,7 @@ export default function SearchForm() {
 
   return (
     <form onSubmit={handleSearch}>
-        <div className="flex space-x-4">
+        <div className="flex lg:space-x-4 flex-wrap lg:flex-nowrap space-y-4 lg:space-y-0">
           <Input 
             name="query"
             type="text" 
@@ -46,7 +46,7 @@ export default function SearchForm() {
             name="type"
             defaultValue={searchParams.get("type") ?? "all"}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="mr-4 lg:mr-0 w-[calc(100%_-120px)] lg:w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
