@@ -7,6 +7,8 @@ import { ActionResponse, ContentType, Page } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 import { auth } from '@clerk/nextjs/server'
+import crypto from "crypto";
+import { getChecksum } from "./helper";
 
 const revalidateLibrary = () => {
   revalidatePath('/dashboard/library');
@@ -21,7 +23,26 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
     const {title, markdown} = await scrape(url);
     console.log("Scraped URL: ", title);
 
-    console.log("Generating embeddings for the markdown");
+    const checksum = getChecksum(markdown);
+
+    // Check if the page already exists
+    const { data: existingPage, error: existingPageError } = await supabase
+    .from("pages")
+    .select()
+    .eq("checksum", checksum)
+
+    if(existingPageError) throw existingPageError
+
+    if(existingPage.length > 0) {
+      console.log("Page already exists in the database");
+
+      return {
+        data: null,
+        error: "Content already exists"
+      }
+    }
+
+    console.log("Checksum verification successfull. Generating embeddings for the markdown");
 
     const allEmbeddings = await generateTextEmbedding(markdown);
 
@@ -35,7 +56,8 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
       page_content: markdown, 
       page_section_data_input: allEmbeddings,
       type_input: "website",
-      path_input: url
+      path_input: url,
+      checksum_input: checksum
     })
     .returns<number>();
 
