@@ -9,8 +9,8 @@ export default async function Index() {
       <div className="flex flex-col justify-center items-center gap-y-1">
         <span className="text-9xl">Recall</span>
         <div className="text-zinc-400 text-md flex flex-col items-center">
-          <span>Document your learnings easily</span>
-          <span>Recall it whenever you need!</span>
+          <span>Save what catches your eye</span>
+          <span>Recall it anytime</span>
         </div>
       </div>
       <SignedIn>

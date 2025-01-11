@@ -7,7 +7,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <main className="grow flex flex-col">
         <SidebarTrigger />
-        <div className="grow">
+        <div className="grow lg:w-[937.438px] mx-auto">
           {children}
         </div>
       </main>

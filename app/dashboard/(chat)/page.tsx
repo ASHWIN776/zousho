@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown';
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
   return (
-    <div className="flex flex-col w-[937.438px] mx-auto justify-between h-full max-h-[calc(100vh_-_28px)]  gap-y-6">
+    <div className="flex flex-col justify-between h-full max-h-[calc(100vh_-_28px)]  gap-y-6 px-4 lg:px-0">
       <div className="grow overflow-y-auto pr-3">
         {
           messages.length === 0 ? (
@@ -17,8 +17,7 @@ export default function Chat() {
 
               <span className="text-3xl font-semibold mb-2">Talk to your Memory!</span>
               <p className="text-gray-400 text-md max-w-md">
-                Start a conversation by typing a message in the box below. 
-                Your chat history will appear here.
+              Recall anything you want, effortlessly. Type your message in the box below to dive in.
               </p>
             </div>
           )
