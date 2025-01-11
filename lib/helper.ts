@@ -1,6 +1,7 @@
 import { CoreMessage, generateText, streamText } from "ai";
 import { groq } from '@ai-sdk/groq';
 import { cleanQuestionPrompt, createToCleanQuestionPrompt } from "./prompt";
+import crypto from 'crypto';
 
 export const formatTitle = (title: string) => {
   return title.length > 40 ? title.substring(0, 40) + "..." : title;
@@ -27,4 +28,10 @@ export const cleanUserPrompt = async (prompt: string) => {
   })
 
   return text;
+}
+
+export const getChecksum = (str: string) => {
+  const hash = crypto.createHash('sha256');
+  hash.update(str);
+  return hash.digest('hex');
 }
