@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider
-      afterSignOutUrl={metadata.metadataBase.toString()}
+      afterSignOutUrl="/"
       appearance={{
         baseTheme: dark
       }}
