@@ -3,11 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useChat } from 'ai/react';
-import { Loader2, MessageCircle, Search } from 'lucide-react';
+import { Loader2, MessageCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, isLoading, data, setData, setMessages } = useChat();
+
   return (
     <div className="flex flex-col justify-between h-full max-h-[calc(100vh_-_28px)]  gap-y-6 px-4 lg:px-0">
       <div className="grow overflow-y-auto pr-3">
@@ -35,13 +36,34 @@ export default function Chat() {
                   </div>
                 </div>
               ))}
+
+              {
+                data && data.length > 0 ?
+                (
+                  <div className="border rounded-md p-4 bg-sidebar">
+                    <div className="font-bold text-secondary-foreground">AI:</div>
+                    <span>{data[0] as string}</span>
+                  </div>
+                )
+                : undefined
+              }
             </div>
         }
       </div>
 
       <form
         className='py-4 flex gap-x-4'
-        onSubmit={handleSubmit}>
+        onSubmit={event => {
+          if(data && data.length > 0) {
+            setMessages([...messages, {
+              id: `${data[0] as string}-${messages.length}`,
+              role: "assistant",
+              content: data[0] as string
+            }])
+          }
+          setData(undefined)
+          handleSubmit(event)
+        }}>
         <Input
           className=""
           value={input}
