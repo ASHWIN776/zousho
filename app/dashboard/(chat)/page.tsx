@@ -2,6 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ContentType } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useChat } from 'ai/react';
 import { Loader2, MessageCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -54,6 +62,9 @@ export default function Chat() {
       <form
         className='py-4 flex gap-x-4'
         onSubmit={event => {
+          const formData = new FormData(event.currentTarget);
+          const type = formData.get("type") as ContentType;
+
           if(data && data.length > 0) {
             setMessages([...messages, {
               id: `${data[0] as string}-${messages.length}`,
@@ -62,7 +73,11 @@ export default function Chat() {
             }])
           }
           setData(undefined)
-          handleSubmit(event)
+          handleSubmit(event, {
+            data: {
+              type
+            }
+          })
         }}>
         <Input
           className=""
@@ -70,6 +85,19 @@ export default function Chat() {
           placeholder="Say something..."
           onChange={handleInputChange}
         />
+        <Select 
+          name="type"
+          defaultValue="all"
+        >
+          <SelectTrigger className="mr-4 lg:mr-0 w-[calc(100%_-120px)] lg:w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="website">Website</SelectItem>
+            <SelectItem value="note">Note</SelectItem>
+          </SelectContent>
+        </Select>
         {
           isLoading ? 
             (
