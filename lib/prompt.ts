@@ -18,7 +18,6 @@ Guidelines:
 - Never mix information from contexts with vastly different scores
 - Maintain the original tone and style when referencing content
 - For long-form questions (like summaries or blogs), provide detailed responses while staying true to the source material
-- While s
 
 Include reasoning in <justification> tags explaining:
 - Which contexts were most relevant and why
