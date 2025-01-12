@@ -1,6 +1,7 @@
 import { searchPageSections } from '@/lib/actions';
 import { cleanUserPrompt } from '@/lib/helper';
 import { createUserPrompt, systemPrompt } from '@/lib/prompt';
+import { ContentType } from '@/lib/types';
 import { groq } from '@ai-sdk/groq';
 import { CoreMessage, createDataStreamResponse, streamText } from 'ai';
 
@@ -8,7 +9,9 @@ import { CoreMessage, createDataStreamResponse, streamText } from 'ai';
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, data } = await req.json();
+  const contentType = data.type as ContentType;
+
   const lastMessage = messages.at(-1).content
   const cleanPrompt = await cleanUserPrompt(lastMessage);
 
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
     })
   }
 
-  const contextList = await searchPageSections(lastMessage, "all");
+  const contextList = await searchPageSections(lastMessage, contentType);
   const systemMessage: CoreMessage = {
     role: "system",
     content: systemPrompt
