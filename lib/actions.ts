@@ -7,7 +7,6 @@ import { ActionResponse, ContentType, Page } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 import { auth } from '@clerk/nextjs/server'
-import crypto from "crypto";
 import { getChecksum } from "./helper";
 
 const revalidateLibrary = () => {
@@ -29,6 +28,8 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
     const { data: existingPage, error: existingPageError } = await supabase
     .from("pages")
     .select()
+    .eq("user_id", userId)
+    .eq("type", "website")
     .eq("checksum", checksum)
 
     if(existingPageError) throw existingPageError
@@ -94,7 +95,28 @@ export const saveNote = async (title: string, note: string): Promise<ActionRespo
   const { userId } = await auth()
 
   try {
-    console.log("Generating embeddings for the notes");
+    const checksum = getChecksum(note);
+
+    // Check if the page already exists
+    const { data: existingPage, error: existingPageError } = await supabase
+    .from("pages")
+    .select()
+    .eq("user_id", userId)
+    .eq("type", "note")
+    .eq("checksum", checksum)
+
+    if(existingPageError) throw existingPageError
+
+    if(existingPage.length > 0) {
+      console.log("Page already exists in the database");
+
+      return {
+        data: null,
+        error: "Content already exists"
+      }
+    }
+
+    console.log("Checksum verification successfull. Generating embeddings for the notes");
 
     // Generate embeddings for the title and note
     const allEmbeddings = await generateTextEmbedding(`#${title} ${note}`);
@@ -107,7 +129,8 @@ export const saveNote = async (title: string, note: string): Promise<ActionRespo
       page_content: note,
       page_section_data_input: allEmbeddings,
       type_input: "note",
-      path_input: null
+      path_input: null,
+      checksum_input: checksum
     })
     .returns<number>();
 
