@@ -1,2 +1,2 @@
 ## Recall
-Document your learnings while you build!
+Save what catches your eye, recall it anytime
