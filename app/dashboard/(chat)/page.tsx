@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ContentType } from '@/lib/types';
+import { ContentType, Page } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -12,10 +12,44 @@ import {
 } from "@/components/ui/select"
 import { useChat } from 'ai/react';
 import { Loader2, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { fetchPages } from '@/lib/actions';
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, data, setData, setMessages } = useChat();
+  const [pages, setPages] = useState<Page[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const pages = await fetchPages("all");
+      setPages(pages);
+      setLoading(false);
+    })()
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (pages.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center px-4">
+        <span className="text-3xl font-semibold mb-2">Your Library is Empty</span>
+        <p className="text-gray-400 text-md max-w-md mb-4">
+          Add some websites or notes to your library first. Once you have content, you can start chatting with your memory!
+        </p>
+        <Button asChild>
+          <a href="/dashboard/library">Go to Library</a>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col justify-between h-full max-h-[calc(100vh_-_28px)]  gap-y-6 px-4 lg:px-0">
