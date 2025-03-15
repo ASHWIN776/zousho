@@ -20,13 +20,14 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Plus } from 'lucide-react'
 import { SidebarMenuButton } from '../ui/sidebar'
-import { saveNote, saveUrl } from '@/lib/actions'
+import { checkDuplicate, generateTextEmbedding, saveNote, saveWebsite, scrapeUrl } from '@/lib/actions'
 import { ContentType } from '@/lib/types'
 import { toast } from 'sonner'
 
 export function AddContentDialog() {
   const [contentType, setContentType] = useState<'website' | 'note'>('website')
   const [isLoading, setIsLoading] = useState(false)
+  const [statusText, setStatusText] = useState("idle")
   const [open, setOpen] = useState(false)
 
   const getFormValues = (formData: FormData) => {
@@ -59,9 +60,15 @@ export function AddContentDialog() {
     if (!assertInputs(formData)) return;
     setIsLoading(true);
 
-    const {data, error} = await handleContent(formData);
-
+    const result = await handleContent(formData);
     setIsLoading(false);
+
+    if (!result) {
+      return;
+    }
+
+    const { data, error } = result;
+
     if(error) {
       toast.error(error);
     } else {
@@ -74,13 +81,75 @@ export function AddContentDialog() {
     }
   }
 
+  const handleUrl = async (formData: FormData) => {
+    const { url } = getFormValues(formData);
+
+    setStatusText("Extracting content...");
+
+    const {success: scrapeSuccess, data: scrapedData} = await scrapeUrl(url);
+
+    if (!scrapeSuccess || !scrapedData) {
+      toast.error("Failed to get content");
+      return;
+    }
+
+    setStatusText("Checking content...");
+
+    const { title, markdown } = scrapedData;
+    const { isDuplicate, error: checkError, checksum } = await checkDuplicate(markdown);
+
+    if (isDuplicate) {
+      toast.error(checkError || "Content already exists");
+      return;
+    }
+
+    setStatusText("Generating embeddings...");
+
+    const embeddings = await generateTextEmbedding(markdown);
+
+    if (!embeddings) {
+      toast.error("Failed to generate embeddings");
+      return;
+    }
+
+    setStatusText("Saving content...");
+
+    const { data, error: saveError } = await saveWebsite(markdown, title, url, checksum!, embeddings);
+
+    return { data, error: saveError };
+  }
+
+  const handleNote = async (formData: FormData) => {
+    const { title, note } = getFormValues(formData);
+    
+    setStatusText("Checking for duplicates...");
+    const { isDuplicate, error: checkError, checksum } = await checkDuplicate(note);
+
+    if (isDuplicate) {
+      toast.error(checkError || "Content already exists");
+      return;
+    }
+
+    setStatusText("Saving Content...");
+    const embeddings = await generateTextEmbedding(note);
+
+    if (!embeddings) {
+      toast.error("Failed to generate embeddings");
+      return;
+    }
+
+    const { data, error: saveError } = await saveNote(title, note, checksum!, embeddings);
+
+    return { data, error: saveError };
+  }
+
   const handleContent = async (formData: FormData) => {
     const { contentType, url, title, note } = getFormValues(formData);
 
     if (contentType === "website") {
-      return saveUrl(url);
+      return handleUrl(formData);
     } else {
-      return saveNote(title, note);
+      return handleNote(formData);
     }
   }
 
@@ -145,7 +214,7 @@ export function AddContentDialog() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
+                {statusText}
               </>
             ) : (
               'Save'
@@ -156,4 +225,3 @@ export function AddContentDialog() {
     </Dialog>
   )
 }
-
