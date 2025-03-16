@@ -1,9 +1,10 @@
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
-import "./globals.css";
+import "@/styles/globals.css";
+import "@/styles/prosemirror.css";
 import { Toaster } from "@/components/ui/sonner";
-import { ClerkProvider, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 
 const defaultUrl = process.env.VERCEL_URL
