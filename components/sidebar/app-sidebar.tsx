@@ -1,4 +1,4 @@
-import { Calendar, Library, Bot, Search, Settings, Plus } from "lucide-react"
+import { Calendar, Library, Bot, Search, Settings, Plus, NotebookPen } from "lucide-react"
 
 import {
   Sidebar,
@@ -27,6 +27,11 @@ const items = [
     title: "Library",
     url: "/dashboard/library",
     icon: Library,
+  },
+  {
+    title: "Add Content",
+    url: "/dashboard/add-content",
+    icon: NotebookPen,
   }
 ]
 
