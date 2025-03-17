@@ -5,7 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import Editor from "@/components/editor"
+import dynamic from "next/dynamic"
+
+// Lazy load the editor component
+const Editor = dynamic(() => import("@/components/editor"), { ssr: false })
 
 export default function AddContentPage() {
   const [contentType, setContentType] = useState<"website" | "pdf" | "note">("website")
@@ -138,6 +141,7 @@ export default function AddContentPage() {
                     setContentType(value)
                     setTitle("")
                     resetFileInput();
+                    setExtractedContent(null);
                   }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select content type" />
