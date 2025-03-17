@@ -127,7 +127,7 @@ export default function AddContentPage() {
               <span className="bg-gradient-to-r text-foreground">Add Content</span>
             </h1>
             <span className="text-sm text-muted-foreground">
-              You can import content to the library from websites, PDFs, or from your own notes.
+              You can import content to the library from websites, PDFs, or even write your own notes.
             </span>
           </div>
 
