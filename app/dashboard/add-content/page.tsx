@@ -14,6 +14,7 @@ export default function AddContentPage() {
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [content, setContent] = useState(null)
+  const [extractedContent, setExtractedContent] = useState(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -102,6 +103,18 @@ export default function AddContentPage() {
     }
   }
 
+  const renderDynamicContent = () => {
+    if(contentType === "website" || contentType === "pdf") {
+      return (
+        <div className="min-h-[800px] w-full max-w-screen-lg border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg dark:bg-zinc-800/50 dark:border-zinc-700">
+          {extractedContent}
+        </div>
+      )
+    }
+
+    return <Editor />
+  }
+
   return (
     <div>
       <div className="px-4 py-8">
@@ -154,7 +167,7 @@ export default function AddContentPage() {
             
             <div className="space-y-2">
               <Label htmlFor="content">Content</Label>
-              <Editor />
+              {renderDynamicContent()}
             </div>
           </form>
         </div>
