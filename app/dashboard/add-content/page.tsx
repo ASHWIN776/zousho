@@ -60,6 +60,7 @@ export default function AddContentPage() {
                   type="url" 
                   placeholder="https://example.com" 
                   value={url}
+                  className="dark:bg-zinc-800/50 dark:border-zinc-700"
                   onChange={(e) => setUrl(e.target.value)}
                 />
                 <Button 
@@ -84,6 +85,7 @@ export default function AddContentPage() {
                   accept=".pdf"
                   ref={fileInputRef}
                   onChange={handleFileChange}
+                  className="dark:bg-zinc-800/50 dark:border-zinc-700"
                 />
                 <Button 
                   onClick={handleGetData} 
@@ -142,6 +144,7 @@ export default function AddContentPage() {
                   type="text" 
                   placeholder="Enter content title"
                   value={title}
+                  className="dark:bg-zinc-800/50 dark:border-zinc-700"
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
