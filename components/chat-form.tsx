@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ContentType } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -33,8 +32,8 @@ export function ChatForm({ input, isLoading, onInputChange, onSubmit, className 
       onSubmit={onSubmit}
     >
       <div className="max-w-3xl mx-auto px-4 py-4">
-        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-y-4 rounded-lg border border-gray-400 bg-background p-4">
+          <div className="flex items-center">
             <Select name="type" defaultValue="all">
               <SelectTrigger className="w-[120px]">
                 <SelectValue />

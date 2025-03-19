@@ -38,6 +38,7 @@ export default function Chat() {
     const formData = new FormData(event.currentTarget);
     const type = formData.get("type") as ContentType;
 
+    // If this is the first message, trigger the transition and wait for it to complete
     if (!messages.length) {
       setIsTransitioning(true);
       // Wait for the transition animation to complete
