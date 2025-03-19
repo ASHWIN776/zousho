@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ContentType, Page } from '@/lib/types';
 import { useChat } from 'ai/react';
 import { Loader2 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { fetchPages } from '@/lib/actions';
 import { CodeBlock } from '@/components/code-block';
@@ -15,6 +15,15 @@ export default function Chat() {
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, data]);
 
   useEffect(() => {
     (async () => {
@@ -139,6 +148,7 @@ export default function Chat() {
               )
               : undefined
             }
+            <div ref={messagesEndRef} />
           </div>
         </div>
       </div>
