@@ -15,6 +15,7 @@ import { Loader2, MessageCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { fetchPages } from '@/lib/actions';
+import { CodeBlock } from '@/components/code-block';
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, data, setData, setMessages } = useChat();
@@ -70,7 +71,24 @@ export default function Chat() {
                 <div key={message.id} className="whitespace-pre-wrap">
                   <div className={`${message.role !== "user" ? "border rounded-md p-4 bg-sidebar" : ""}`}>
                     <div className="font-bold text-secondary-foreground">{message.role === "user" ? "User: " : "AI: "}</div>
-                    <ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        code: ({ className, children, ...props }) => {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const isInline = !match;
+                          return !isInline ? (
+                            <CodeBlock
+                              language={match[1]}
+                              value={String(children).replace(/\n$/, '')}
+                            />
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        }
+                      }}
+                    >
                       {message.content.length > 0 ? (
                         message.content
                       ) : undefined}
