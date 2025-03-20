@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 
 const links = [
   {
@@ -47,12 +48,22 @@ export default function Navbar() {
             
         </NavigationMenuList>
       </NavigationMenu>
-      <Link href="/add-content">
-        <Button disabled={pathname === "/add-content"} className="text-sm" size="sm">
-          <Plus/>
-          Add Content
-        </Button>
-      </Link>
+      <div className="flex items-center gap-x-4">
+        <Link href="/add-content">
+          <Button disabled={pathname === "/add-content"} className="text-sm" size="sm">
+            <Plus/>
+            Add Content
+          </Button>
+        </Link>
+        <UserButton
+          appearance={{
+            elements: {
+              userButtonBox: "flex flex-row-reverse items-center gap-x-1",
+              userButtonOuterIdentifier: "group-data-[collapsible=icon]:hidden text-base"
+            }
+          }}
+        />
+      </div>
     </nav>
   )
 }
