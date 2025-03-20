@@ -31,7 +31,7 @@ export function ChatForm({ input, isLoading, onInputChange, onSubmit, className 
       className={`bg-background ${className}`}
       onSubmit={onSubmit}
     >
-      <div className="max-w-3xl mx-auto px-4 py-4">
+      <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex flex-col gap-y-4 rounded-lg border border-gray-600 bg-background p-4">
           <div className="flex items-center">
             <Select name="type" defaultValue="all">
