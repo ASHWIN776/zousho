@@ -31,17 +31,20 @@ export default function Navbar() {
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
-          {
-            links.map(navLink => (
-              <NavigationMenuItem key={navLink.title} className="text-sm">
-                <Link href={navLink.url} legacyBehavior passHref>
-                  <NavigationMenuLink className={pathname === navLink.url ? "text-foreground" : "transition-colors hover:text-foreground text-foreground/80"}>
-                    {navLink.title}
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            ))
-          }
+          <NavigationMenuList className="gap-4">
+            {
+              links.map(navLink => (
+                <NavigationMenuItem key={navLink.title} className="text-sm">
+                  <Link href={navLink.url} legacyBehavior passHref>
+                    <NavigationMenuLink className={pathname === navLink.url ? "text-foreground" : "transition-colors hover:text-foreground text-foreground/80"}>
+                      {navLink.title}
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              ))
+            }
+          </NavigationMenuList>
+            
         </NavigationMenuList>
       </NavigationMenu>
       <Link href="/add-content">
