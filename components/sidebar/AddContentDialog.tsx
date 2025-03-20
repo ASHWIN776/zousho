@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Plus } from 'lucide-react'
-import { SidebarMenuButton } from '../ui/sidebar'
+import { Loader2 } from 'lucide-react'
 import { checkDuplicate, generateTextEmbedding, saveNote, saveWebsite, scrapeUrl } from '@/lib/actions'
 import { ContentType } from '@/lib/types'
 import { toast } from 'sonner'
@@ -96,7 +95,8 @@ export function AddContentDialog() {
     setStatusText("Checking content...");
 
     const { title, markdown } = scrapedData;
-    const { isDuplicate, error: checkError, checksum } = await checkDuplicate(markdown);
+    const contentToSave = markdown.replace(/\n/g, "");
+    const { isDuplicate, error: checkError, checksum } = await checkDuplicate(contentToSave);
 
     if (isDuplicate) {
       toast.error(checkError || "Content already exists");
@@ -105,7 +105,7 @@ export function AddContentDialog() {
 
     setStatusText("Generating embeddings...");
 
-    const embeddings = await generateTextEmbedding(markdown);
+    const embeddings = await generateTextEmbedding(contentToSave);
 
     if (!embeddings) {
       toast.error("Failed to generate embeddings");
@@ -114,7 +114,7 @@ export function AddContentDialog() {
 
     setStatusText("Saving content...");
 
-    const { data, error: saveError } = await saveWebsite(markdown, title, url, checksum!, embeddings);
+    const { data, error: saveError } = await saveWebsite(contentToSave, title, url, checksum!, embeddings);
 
     return { data, error: saveError };
   }
@@ -159,12 +159,12 @@ export function AddContentDialog() {
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <SidebarMenuButton className="hover:bg-primary/90 hover:text-primary-foreground" asChild tooltip="Add Content">
+        {/* <SidebarMenuButton className="hover:bg-primary/90 hover:text-primary-foreground" asChild tooltip="Add Content">
           <Button className="w-full group-data-[collapsible=icon]:w-8 bg-foreground text-background">
             <Plus className="shrink-0" />
             <span className="group-data-[collapsible=icon]:hidden">Add Content</span>
           </Button>
-        </SidebarMenuButton>
+        </SidebarMenuButton> */}
       </DialogTrigger>
       <DialogContent 
         className="sm:max-w-[425px]">
