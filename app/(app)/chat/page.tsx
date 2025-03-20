@@ -26,6 +26,7 @@ export default function Chat() {
   }, [messages, data]);
 
   useEffect(() => {
+    // Use the supabase client to fetch pages, and fetch only the count
     (async () => {
       const pages = await fetchPages("all");
       setPages(pages);
