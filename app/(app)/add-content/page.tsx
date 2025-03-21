@@ -5,16 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import dynamic from "next/dynamic"
 import { checkDuplicate, generateTextEmbedding, saveNote, saveWebsite, scrapeUrl } from "@/lib/actions"
 import { CodeBlock } from "@/components/code-block"
 import ReactMarkdown from "react-markdown"
 import { toast } from 'sonner'
 import { Page } from "@/lib/types"
 import { Loader2 } from "lucide-react"
-
-// Lazy load the editor component
-const Editor = dynamic(() => import("@/components/editor"), { ssr: false })
 
 export default function AddContentPage() {
   const [contentType, setContentType] = useState<"website" | "pdf" | "note">("website")
@@ -260,7 +256,8 @@ export default function AddContentPage() {
       )
     }
 
-    return <Editor />
+    // TODO: Add tiptap editor
+    return null;
   }
 
   return (

@@ -1,6 +1,5 @@
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
-import "@/styles/prosemirror.css";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
