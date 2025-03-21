@@ -51,8 +51,8 @@ export function ChatForm({ input, isLoading, onInputChange, onSubmit, className 
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Recalling...
+                  <Loader2 className="animate-spin" />
+                  Recalling
                 </>
               ) : (
                 <>
