@@ -6,16 +6,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import dynamic from "next/dynamic"
-import { scrapeUrl } from "@/lib/actions"
+import { checkDuplicate, generateTextEmbedding, saveNote, saveWebsite, scrapeUrl } from "@/lib/actions"
 import { CodeBlock } from "@/components/code-block"
 import ReactMarkdown from "react-markdown"
+import { toast } from 'sonner'
+import { Page } from "@/lib/types"
+import { Loader2 } from "lucide-react"
 
 // Lazy load the editor component
 const Editor = dynamic(() => import("@/components/editor"), { ssr: false })
 
 export default function AddContentPage() {
   const [contentType, setContentType] = useState<"website" | "pdf" | "note">("website")
-  const [isLoading, setIsLoading] = useState(false)
+  const [loadingStates, setLoadingStates] = useState({
+    isFetching: false,
+    isSaving: false
+  })
   const [url, setUrl] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
@@ -38,7 +44,10 @@ export default function AddContentPage() {
   };
 
   const handleGetData = async () => {
-    setIsLoading(true)
+    setLoadingStates(prevStates => ({
+      ...prevStates,
+      isFetching: true
+    }))
     try {
       if (contentType === "website" && url) {
         console.log("Fetching website data from:", url)
@@ -48,6 +57,9 @@ export default function AddContentPage() {
           console.log("Fetched website data:", data.markdown)
           setTitle(data.title);
           setExtractedContent(data.markdown);
+          toast.success(`Website data fetched successfully. Populated ${data.title ? "title and " : ""}content below`);
+        } else {
+          toast.error("Failed to get website data");
         }
       } else if (contentType === "pdf" && file) {
         // TODO: Add PDF processing logic
@@ -56,8 +68,98 @@ export default function AddContentPage() {
     } catch (error) {
       console.error("Error fetching data:", error)
     } finally {
-      setIsLoading(false)
+      setLoadingStates(prevStates => ({
+        ...prevStates,
+        isFetching: false
+      }))
     }
+  }
+
+  const handleSaveData = async () => {
+    setLoadingStates(prevStates => ({
+      ...prevStates,
+      isSaving: true
+    }))
+
+    // Assert Inputs
+    if (!assertInputs()) return;
+
+    const contentToSave = contentType === "website" ? extractedContent!.replace(/\n/g, "") : content;
+
+    // Save Data
+    try {
+      if (!contentToSave) {
+        throw new Error("Something went wrong. Content is empty")
+      }
+      // Check for duplicates
+      const { isDuplicate, error: checkError, checksum } = await checkDuplicate(contentToSave);
+
+      if (isDuplicate) {
+        throw new Error(checkError || "Content already exists");
+      }
+
+      console.log("Duplicate Check completed")
+
+      // Generate embeddings
+      const embeddings = await generateTextEmbedding(contentToSave);
+
+      if (!embeddings) {
+        throw new Error("Failed to generate embeddings");
+      }
+
+      console.log("Embeddings generated")
+
+      let saveError: string | null = null;
+      let savedPageData: Page | null = null;
+
+      // Save to database
+      if(contentType === "website"){
+        ({ data: savedPageData, error: saveError } = await saveWebsite(contentToSave, title, url, checksum!, embeddings));
+      } else if (contentType === "note") {
+        ({ data: savedPageData, error: saveError } = await saveNote(title, contentToSave, checksum!, embeddings));
+      }
+
+      if(saveError) {
+        throw new Error(saveError);
+      }
+
+      console.log("Data saved")
+
+      if(savedPageData){
+        toast.success(
+          <span>
+            <span className='font-bold'>{savedPageData.name}</span> has been added to your library
+          </span>
+        )
+      } else {
+        throw new Error("Something went wrong. Failed to save data");
+      }
+    } catch (error) {
+      console.error("Error saving data:", error)
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+
+      toast.error(errorMessage);
+    }
+    finally {
+      setLoadingStates(prevStates => ({
+        ...prevStates,
+        isSaving: false
+      }))
+    }
+  }
+
+  const assertInputs = (): boolean => {
+    if (!(title && (extractedContent || content))) {
+      toast.error("Title and Content are required");
+      return false;
+    }
+
+    if(contentType === "website" && !url) {
+      toast.error("URL is required when saving website content");
+      return false;
+    }
+
+    return true;
   }
 
   // TODO: Simplify this
@@ -79,9 +181,9 @@ export default function AddContentPage() {
               <Button 
                 variant="outline"
                 onClick={handleGetData} 
-                disabled={!url || isLoading}
+                disabled={!url || loadingStates.isFetching}
               >
-                {isLoading ? "Loading..." : "Get Data"}
+                {loadingStates.isFetching ? "Loading..." : "Get Data"}
               </Button>
             </div>
           </div>
@@ -102,9 +204,9 @@ export default function AddContentPage() {
               <Button 
                 variant="outline"
                 onClick={handleGetData} 
-                disabled={!file || isLoading}
+                disabled={!file || loadingStates.isFetching}
               >
-                {isLoading ? "Loading..." : "Get Data"}
+                {loadingStates.isFetching ? "Loading..." : "Get Data"}
               </Button>
             </div>
           </div>
@@ -176,18 +278,14 @@ export default function AddContentPage() {
             </div>
             <Button
               className="w-[100px]"
-              disabled={!(title && (extractedContent || content))}
-              onClick={() => {
-                // TODO: Implement save functionality
-                console.log("Saving content:", {
-                  type: contentType,
-                  title,
-                  url,
-                  content: extractedContent || content
-                })
-              }}
+              disabled={!(title && (extractedContent || content)) || loadingStates.isSaving}
+              onClick={handleSaveData}
             >
-              Save
+              {loadingStates.isSaving ? (
+                <>
+                  <Loader2 className="animate-spin" /> Saving
+                </>
+              ) : "Save"}
             </Button>
           </div>
 
