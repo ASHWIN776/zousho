@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown"
 import { toast } from 'sonner'
 import { Page } from "@/lib/types"
 import { Loader2 } from "lucide-react"
+import Editor from "@/components/editor"
 
 export default function AddContentPage() {
   const [contentType, setContentType] = useState<"website" | "pdf" | "note">("website")
@@ -21,8 +22,9 @@ export default function AddContentPage() {
   const [url, setUrl] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
-  const [content, setContent] = useState(null)
+  const [content, setContent] = useState("")
   const [extractedContent, setExtractedContent] = useState<string | null>(null)
+  const [canSaveNote, setCanSaveNote] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -72,6 +74,9 @@ export default function AddContentPage() {
   }
 
   const handleSaveData = async () => {
+    // TODO: Remove this when PDF is implemented
+    if(contentType === "pdf") return;
+    
     setLoadingStates(prevStates => ({
       ...prevStates,
       isSaving: true
@@ -80,7 +85,8 @@ export default function AddContentPage() {
     // Assert Inputs
     if (!assertInputs()) return;
 
-    const contentToSave = contentType === "website" ? extractedContent!.replace(/\n/g, "") : content;
+    // For note, remove multiple newlines to single newline
+    const contentToSave = contentType === "website" ? extractedContent!.replace(/\n/g, "") : content.replace(/\n+/g, "\n");
 
     // Save Data
     try {
@@ -88,7 +94,7 @@ export default function AddContentPage() {
         throw new Error("Something went wrong. Content is empty")
       }
       // Check for duplicates
-      const { isDuplicate, error: checkError, checksum } = await checkDuplicate(contentToSave);
+      const { isDuplicate, error: checkError, checksum } = await checkDuplicate(contentToSave, contentType);
 
       if (isDuplicate) {
         throw new Error(checkError || "Content already exists");
@@ -256,8 +262,7 @@ export default function AddContentPage() {
       )
     }
 
-    // TODO: Add tiptap editor
-    return null;
+    return <Editor content={content} onChange={setContent} setCanSave={setCanSaveNote} />
   }
 
   return (
@@ -275,7 +280,7 @@ export default function AddContentPage() {
             </div>
             <Button
               className="w-[100px]"
-              disabled={!(title && (extractedContent || content)) || loadingStates.isSaving}
+              disabled={!(title && (extractedContent || content)) || loadingStates.isSaving || !canSaveNote}
               onClick={handleSaveData}
             >
               {loadingStates.isSaving ? (

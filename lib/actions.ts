@@ -35,7 +35,7 @@ export const scrapeUrl = async (url: string): Promise<{success: boolean, data: {
   }
 }
 
-export const checkDuplicate = async (content: string): Promise<{isDuplicate: boolean, error: string | null, checksum: string | null}> => {
+export const checkDuplicate = async (content: string, type: ContentType): Promise<{isDuplicate: boolean, error: string | null, checksum: string | null}> => {
   const supabase = await createClient();
   const { userId } = await auth()
 
@@ -46,7 +46,7 @@ export const checkDuplicate = async (content: string): Promise<{isDuplicate: boo
     .from("pages")
     .select()
     .eq("user_id", userId)
-    .eq("type", "website")
+    .eq("type", type)
     .eq("checksum", checksum)
 
     if(existingPageError) throw existingPageError
