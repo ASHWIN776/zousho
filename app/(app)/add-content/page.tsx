@@ -266,81 +266,79 @@ export default function AddContentPage() {
   }
 
   return (
-    <div>
-      <div className="px-4 py-8">
-        <div className="space-y-8 text-white">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col gap-y-2">
-              <h1 className="text-4xl font-semibold">
-                <span className="bg-gradient-to-r text-foreground">Add Content</span>
-              </h1>
-              <span className="text-sm text-muted-foreground">
-                You can import content to the library from websites, PDFs, or even write your own notes.
-            </span>
+    <div className="px-4 py-8">
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-y-2">
+            <h1 className="text-4xl font-semibold">
+              Add Content
+            </h1>
+            <span className="text-sm text-muted-foreground">
+              You can import content to the library from websites, PDFs, or even write your own notes.
+          </span>
+          </div>
+          <Button
+            className="w-[100px]"
+            disabled={!(title && (extractedContent || content)) || loadingStates.isSaving || !canSaveNote}
+            onClick={handleSaveData}
+          >
+            {loadingStates.isSaving ? (
+              <>
+                <Loader2 className="animate-spin" /> Saving
+              </>
+            ) : "Save"}
+          </Button>
+        </div>
+
+        <form className="flex flex-col gap-y-6">
+          <div className="flex gap-4">
+            <div className="w-[300px] space-y-2">
+              <Label htmlFor="content-type">Content Type</Label>
+              <Select 
+                value={contentType}
+                onValueChange={(value: "website" | "pdf" | "note") => {
+                  setContentType(value)
+                  setTitle("")
+                  resetFileInput();
+                  setExtractedContent(null);
+                }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select content type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="note">Note</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Button
-              className="w-[100px]"
-              disabled={!(title && (extractedContent || content)) || loadingStates.isSaving || !canSaveNote}
-              onClick={handleSaveData}
-            >
-              {loadingStates.isSaving ? (
-                <>
-                  <Loader2 className="animate-spin" /> Saving
-                </>
-              ) : "Save"}
-            </Button>
+
+            {renderDynamicInput()}
           </div>
 
-          <form className="flex flex-col gap-y-6">
-            <div className="flex gap-4">
-              <div className="w-[300px] space-y-2">
-                <Label htmlFor="content-type">Content Type</Label>
-                <Select 
-                  value={contentType}
-                  onValueChange={(value: "website" | "pdf" | "note") => {
-                    setContentType(value)
-                    setTitle("")
-                    resetFileInput();
-                    setExtractedContent(null);
-                  }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select content type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="website">Website</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="note">Note</SelectItem>
-                  </SelectContent>
-                </Select>
+          {
+            contentType !== "note" 
+            ? (
+              <div className="grow space-y-2">
+                <Label htmlFor="content-title">Title</Label>
+                <Input 
+                  id="content-title" 
+                  type="text" 
+                  placeholder="Enter content title"
+                  value={title}
+                  className="dark:bg-zinc-800/50 dark:border-zinc-700"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
               </div>
-
-              {renderDynamicInput()}
-            </div>
-
-            {
-              contentType !== "note" 
-              ? (
-                <div className="grow space-y-2">
-                  <Label htmlFor="content-title">Title</Label>
-                  <Input 
-                    id="content-title" 
-                    type="text" 
-                    placeholder="Enter content title"
-                    value={title}
-                    className="dark:bg-zinc-800/50 dark:border-zinc-700"
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </div>
-              )
-              : null
-            }
-            
-            <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
-              {renderDynamicContent()}
-            </div>
-          </form>
-        </div>
+            )
+            : null
+          }
+          
+          <div className="space-y-2">
+            <Label htmlFor="content">Content</Label>
+            {renderDynamicContent()}
+          </div>
+        </form>
       </div>
     </div>
   )

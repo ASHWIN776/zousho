@@ -291,3 +291,30 @@ export const deletePage = async (pageId: string): Promise<ActionResponse<Page | 
     }
   }
 }
+
+export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: string, content: string, created_at: string} | null>> => {
+  const supabase = await createClient();
+  const { userId } = await auth()
+
+  try {
+    const { data, error } = await supabase
+    .from("pages")
+    .select("name, content, created_at")
+    .eq("user_id", userId)
+    .eq("id", pageId)
+    .returns<{name: string, content: string, created_at: string}[]>()
+
+    if (error) throw error
+
+    return {
+      data: data[0],
+      error: null
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      data: null,
+      error: typeof error === "string" ? error : (error as PostgrestError).message
+    }
+  }
+}

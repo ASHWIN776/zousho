@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function ResourceCard({ page }: Props) {
-  const { name: title, path, max_similarity: similarity, created_at } = page;
+  const { name: title, path, max_similarity: similarity, created_at, id } = page;
   const similarityPercentage = similarity ? (similarity * 100).toFixed(2) : undefined;
 
   return (
@@ -24,8 +24,8 @@ export default function ResourceCard({ page }: Props) {
           <div className="flex justify-between mb-1">
             <Link
               className="text-md font-semibold text-secondary-foreground"
-              href={path ?? "#"} 
-              target="_blank"
+              href={path ?? `/library/${id}`}
+              target={path ? "_blank" : "_self"}
             >
               {formatTitle(title)}
             </Link>
