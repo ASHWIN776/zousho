@@ -34,7 +34,7 @@ export default function ResourceCard({ page }: Props) {
             />
           </div>
           <p className="text-xs text-zinc-300 mb-2">{format(created_at, 'MMMM d, yyyy')}</p>
-          <p className="text-xs text-zinc-400 mb-4">Genre</p>
+          <p className="text-xs text-zinc-400 mb-4">{page.type.slice(0, 1).toUpperCase() + page.type.slice(1)}</p>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-zinc-400">{

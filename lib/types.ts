@@ -6,6 +6,7 @@ export interface Page {
   path: string;
   max_similarity: number | null;
   created_at: string;
+  type: ContentType;
 }
 
 export interface ResultType {

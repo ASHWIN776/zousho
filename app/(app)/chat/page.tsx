@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { fetchPages } from '@/lib/actions';
 import { CodeBlock } from '@/components/code-block';
 import { ChatForm } from '@/components/chat-form';
+import Link from 'next/link';
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, data, setData, setMessages } = useChat();
@@ -75,11 +76,11 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto">
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <span className="text-3xl font-semibold mb-2">Your Library is Empty</span>
-            <p className="text-gray-400 text-md max-w-md mb-4">
+            <p className="text-muted-foreground text-md max-w-md mb-4">
               Add some websites or notes to your library first. Once you have content, you can start chatting with your memory!
             </p>
             <Button asChild>
-              <a href="/dashboard/library">Go to Library</a>
+              <Link href="/library">Go to Library</Link>
             </Button>
           </div>
         </div>

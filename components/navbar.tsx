@@ -20,6 +20,7 @@ const links = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const isCurrentPath = (path: string) => pathname.startsWith(path);
 
   return (
     <nav className="h-16 px-20 flex items-center justify-between border-b border-dashed">
@@ -37,7 +38,7 @@ export default function Navbar() {
               links.map(navLink => (
                 <NavigationMenuItem key={navLink.title} className="text-sm">
                   <Link href={navLink.url} legacyBehavior passHref>
-                    <NavigationMenuLink className={pathname === navLink.url ? "text-foreground" : "transition-colors hover:text-foreground text-foreground/80"}>
+                    <NavigationMenuLink className={isCurrentPath(navLink.url) ? "text-foreground" : "transition-colors hover:text-foreground text-foreground/80"}>
                       {navLink.title}
                     </NavigationMenuLink>
                   </Link>
@@ -50,7 +51,7 @@ export default function Navbar() {
       </NavigationMenu>
       <div className="flex items-center gap-x-4">
         <Link href="/add-content">
-          <Button disabled={pathname === "/add-content"} className="text-sm" size="sm">
+          <Button disabled={isCurrentPath("/add-content")} className="text-sm" size="sm">
             <Plus/>
             Add Content
           </Button>
