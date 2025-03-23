@@ -1,9 +1,6 @@
 import { ContentType } from "@/lib/types";
-import ResourceCard from "./ResourceCard";
+import ResourceCard from "./resource-card";
 import { fetchPages, searchQuery } from "@/lib/actions";
-import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
-import { AddContentDialog } from "../sidebar/AddContentDialog";
 
 interface Props {
   query?: string

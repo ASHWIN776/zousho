@@ -1,6 +1,6 @@
 "use server"
 
-import { generateTextEmbedding, getEmbedding } from "./generateEmbeddings";
+import { getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
 import { ActionResponse, ContentType, Page } from "./types";
@@ -8,54 +8,97 @@ import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 import { auth } from '@clerk/nextjs/server'
 import { getChecksum } from "./helper";
+import splitter from "./splitter";
+import { FeatureExtractionOutput } from "@huggingface/inference";
 
 const revalidateLibrary = () => {
   revalidatePath('/dashboard/library');
 }
 
-export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>> => {
+export const scrapeUrl = async (url: string): Promise<{success: boolean, data: {title: string, markdown: string} | null}> => {
+  try {
+    const {title, markdown} = await scrape(url);
+    return {
+      success: true,
+      data: {
+        title,
+        markdown
+      }
+    };
+  } catch (error) {
+    console.error("Error scraping URL: ", error);
+
+    return {
+      success: false,
+      data: null
+    }
+  }
+}
+
+export const checkDuplicate = async (content: string, type: ContentType): Promise<{isDuplicate: boolean, error: string | null, checksum: string | null}> => {
   const supabase = await createClient();
   const { userId } = await auth()
 
   try {
-    console.log("Scraping URL: ", url);
-    const {title, markdown} = await scrape(url);
-    console.log("Scraped URL: ", title);
+    const checksum = getChecksum(content);
 
-    const checksum = getChecksum(markdown);
-
-    // Check if the page already exists
     const { data: existingPage, error: existingPageError } = await supabase
     .from("pages")
     .select()
     .eq("user_id", userId)
-    .eq("type", "website")
+    .eq("type", type)
     .eq("checksum", checksum)
 
     if(existingPageError) throw existingPageError
 
-    if(existingPage.length > 0) {
-      console.log("Page already exists in the database");
+    return {
+      isDuplicate: existingPage.length > 0,
+      error: null,
+      checksum
+    };
+  } catch (error) {
+    console.error("Error checking for duplicates: ", error);
+    return {
+      isDuplicate: false,
+      error: "Failed to check for duplicates",
+      checksum: null
+    };
+  }
+}
 
-      return {
-        data: null,
-        error: "Content already exists"
-      }
-    }
 
-    console.log("Checksum verification successfull. Generating embeddings for the markdown");
+export const generateTextEmbedding = async (text: string) => {
+  try {
+    const textChunks = await splitter.splitText(text);
+  
+    const processedData = await Promise.all(
+      textChunks.map(async (chunk) => {
+        const response = await getEmbedding(chunk);
+  
+        return {
+          content: chunk,
+          embedding: response
+        }
+      })
+    );
+  
+    return processedData;
+  } catch (error) {
+    console.error("Error generating embeddings: ", error);
+    return [];
+  }
+}
 
-    const allEmbeddings = await generateTextEmbedding(markdown);
+export const saveWebsite = async (markdown: string, title: string, url: string, checksum: string, embeddings: { content: string, embedding: FeatureExtractionOutput }[]): Promise<ActionResponse<Page | null>> => {
+  const supabase = await createClient();
+  const { userId } = await auth()
 
-    console.log("Embeddings generated");
-
-    console.log("Saving the data to the database");
-
+  try {
     const { data: pageId, error: addPageError } = await supabase.rpc("add_page", { 
       user_id_input: userId,
       name_input: title,
       page_content: markdown, 
-      page_section_data_input: allEmbeddings,
+      page_section_data_input: embeddings,
       type_input: "website",
       path_input: url,
       checksum_input: checksum
@@ -90,44 +133,18 @@ export const saveUrl = async (url: string): Promise<ActionResponse<Page | null>>
   }
 }
 
-export const saveNote = async (title: string, note: string): Promise<ActionResponse<Page | null>> => {
+export const saveNote = async (title: string, note: string, checksum: string, embeddings: { content: string, embedding: FeatureExtractionOutput }[]): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
   const { userId } = await auth()
 
   try {
-    const checksum = getChecksum(note);
-
-    // Check if the page already exists
-    const { data: existingPage, error: existingPageError } = await supabase
-    .from("pages")
-    .select()
-    .eq("user_id", userId)
-    .eq("type", "note")
-    .eq("checksum", checksum)
-
-    if(existingPageError) throw existingPageError
-
-    if(existingPage.length > 0) {
-      console.log("Page already exists in the database");
-
-      return {
-        data: null,
-        error: "Content already exists"
-      }
-    }
-
-    console.log("Checksum verification successfull. Generating embeddings for the notes");
-
-    // Generate embeddings for the title and note
-    const allEmbeddings = await generateTextEmbedding(`#${title} ${note}`);
-    console.log("Embeddings generated");
     console.log("Saving the data to the database");
 
     const { data: pageId, error: addPageError } = await supabase.rpc("add_page", {
       user_id_input: userId,
       name_input: title,
       page_content: note,
-      page_section_data_input: allEmbeddings,
+      page_section_data_input: embeddings,
       type_input: "note",
       path_input: null,
       checksum_input: checksum
@@ -262,6 +279,33 @@ export const deletePage = async (pageId: string): Promise<ActionResponse<Page | 
     
     revalidateLibrary();
     
+    return {
+      data: data[0],
+      error: null
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      data: null,
+      error: typeof error === "string" ? error : (error as PostgrestError).message
+    }
+  }
+}
+
+export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: string, content: string, created_at: string} | null>> => {
+  const supabase = await createClient();
+  const { userId } = await auth()
+
+  try {
+    const { data, error } = await supabase
+    .from("pages")
+    .select("name, content, created_at")
+    .eq("user_id", userId)
+    .eq("id", pageId)
+    .returns<{name: string, content: string, created_at: string}[]>()
+
+    if (error) throw error
+
     return {
       data: data[0],
       error: null
