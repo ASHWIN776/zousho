@@ -3,15 +3,13 @@ import { format } from "date-fns";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default async function Page({ params }: { params: Promise<{ id: string }>}) {
+  const { id } = await params;
   const { data, error } = await fetchPage(id);
 
   if(error || !data){
     notFound();
   }
-
-  console.log(data)
 
   return (
     <div className="px-4 py-8 max-w-screen-lg mx-auto">
