@@ -280,7 +280,7 @@ export default function AddContentPage() {
           </div>
           <Button
             className="w-[100px]"
-            disabled={!(title && (extractedContent || content)) || loadingStates.isSaving || !canSaveNote}
+            disabled={!(title && (extractedContent || content)) || loadingStates.isSaving || (contentType === "note" && !canSaveNote)}
             onClick={handleSaveData}
           >
             {loadingStates.isSaving ? (
@@ -302,6 +302,7 @@ export default function AddContentPage() {
                   setTitle("")
                   resetFileInput();
                   setExtractedContent(null);
+                  setUrl("")
                 }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select content type" />
