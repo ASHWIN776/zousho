@@ -274,7 +274,8 @@ export default function AddContentPage() {
               Add Content
             </h1>
             <span className="text-sm text-muted-foreground">
-              You can import content to the library from websites, PDFs, or even write your own notes.
+              {/* Add PDF support */}
+              You can import content to the library from websites, or even write your own notes.
           </span>
           </div>
           <Button
@@ -307,7 +308,7 @@ export default function AddContentPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="website">Website</SelectItem>
-                  <SelectItem value="pdf">PDF</SelectItem>
+                  {/* <SelectItem value="pdf">PDF</SelectItem> */}
                   <SelectItem value="note">Note</SelectItem>
                 </SelectContent>
               </Select>
