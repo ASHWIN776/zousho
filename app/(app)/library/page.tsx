@@ -1,6 +1,6 @@
-import Results from "@/components/library/ResourceResults";
-import SearchForm from "@/components/library/SearchForm";
-import ResultSkeleton from "@/components/skeleton/ResultSkeleton";
+import Results from "@/components/library/resource-results";
+import SearchForm from "@/components/library/search-form";
+import ResultSkeleton from "@/components/skeleton/result-skeleton";
 import { ContentType } from "@/lib/types";
 import { Suspense } from "react";
 

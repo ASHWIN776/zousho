@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { formatTitle } from "@/lib/helper";
 import { deletePage } from "@/lib/actions";
 import { toast } from "sonner";
-import DeleteContentDialog from "./DeleteDialog";
+import DeleteContentDialog from "./delete-dialog";
 
 interface Props {
   page: Page
