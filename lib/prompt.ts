@@ -18,11 +18,15 @@ Guidelines:
 - Never mix information from contexts with vastly different scores
 - Maintain the original tone and style when referencing content
 - For long-form questions (like summaries or blogs), provide detailed responses while staying true to the source material
+`;
 
-Include reasoning in <justification> tags explaining:
+/*
+  Include this for debugging in the above prompt
+  ---
+  Include reasoning in <justification> tags explaining:
 - Which contexts were most relevant and why
 - Any limitations in the available context
-`;
+*/
 
 export const cleanQuestionPrompt = `
 You are an expert in formatting questions for an AI assistant that helps users access and understand their stored knowledge. 
