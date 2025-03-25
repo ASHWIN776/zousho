@@ -233,7 +233,7 @@ export default function AddContentPage() {
   const renderDynamicContent = () => {
     if(contentType === "website" || contentType === "pdf") {
       return (
-        <div className="min-h-[800px] w-full max-w-screen-lg border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg dark:bg-zinc-800/50 dark:border-zinc-700 p-12">
+        <div className="min-h-[800px] w-full max-w-screen-lg border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg dark:bg-zinc-800/50 dark:border-zinc-700 p-12 overflow-x-auto">
           {
             extractedContent ? (
               <ReactMarkdown
