@@ -18,8 +18,8 @@ importers:
         specifier: ^2.2.3
         version: 2.2.3
       '@huggingface/inference':
-        specifier: ^2.8.1
-        version: 2.8.1
+        specifier: ^4.13.12
+        version: 4.13.12
       '@mozilla/readability':
         specifier: ^0.5.0
         version: 0.5.0
@@ -288,12 +288,16 @@ packages:
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
 
-  '@huggingface/inference@2.8.1':
-    resolution: {integrity: sha512-EfsNtY9OR6JCNaUa5bZu2mrs48iqeTz0Gutwf+fU0Kypx33xFQB4DKMhp8u4Ee6qVbLbNWvTHuWwlppLQl4p4Q==}
+  '@huggingface/inference@4.13.12':
+    resolution: {integrity: sha512-fmv4VnQ0u1lUDPEp8iuUe+5awXIoBFGnemBBmuAKEdYmwPhLFkBHSIDPML8OPkf9rUQ4gM7ANqE5w3AqoA2hQw==}
     engines: {node: '>=18'}
 
-  '@huggingface/tasks@0.12.30':
-    resolution: {integrity: sha512-A1ITdxbEzx9L8wKR8pF7swyrTLxWNDFIGDLUWInxvks2ruQ8PLRBZe8r0EcjC3CDdtlj9jV1V4cgV35K/iy3GQ==}
+  '@huggingface/jinja@0.5.5':
+    resolution: {integrity: sha512-xRlzazC+QZwr6z4ixEqYHo9fgwhTZ3xNSdljlKfUFGZSdlvt166DljRELFUfFytlYOYvo3vTisA/AFOuOAzFQQ==}
+    engines: {node: '>=18'}
+
+  '@huggingface/tasks@0.19.85':
+    resolution: {integrity: sha512-4s5+GV257GRmT7Hrt190KlGsuq53IwFtCBj+J+bvoeIpn119589wY7WY/LS5VJMLwu7pUQnouLmMKeEOKO4BSQ==}
 
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
@@ -3108,11 +3112,14 @@ snapshots:
 
   '@floating-ui/utils@0.2.8': {}
 
-  '@huggingface/inference@2.8.1':
+  '@huggingface/inference@4.13.12':
     dependencies:
-      '@huggingface/tasks': 0.12.30
+      '@huggingface/jinja': 0.5.5
+      '@huggingface/tasks': 0.19.85
 
-  '@huggingface/tasks@0.12.30': {}
+  '@huggingface/jinja@0.5.5': {}
+
+  '@huggingface/tasks@0.19.85': {}
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
