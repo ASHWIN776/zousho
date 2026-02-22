@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   if (eventType === 'user.created') {
     const { error } = await supabase.from('users').insert({
       id: id,
-      username: evt.data.username ?? evt.data.first_name,
+      username: evt.data.username ?? evt.data.first_name ?? evt.data.email_addresses[0].email_address.split('@')[0],
       email: evt.data.email_addresses[0].email_address,
     })
 

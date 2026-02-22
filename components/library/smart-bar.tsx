@@ -13,12 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  scrapeUrl,
-  checkDuplicate,
-  generateTextEmbedding,
-  saveWebsite,
-} from "@/lib/actions";
+import { saveLink } from "@/lib/actions";
 
 type Mode = "idle" | "search" | "save";
 type SaveState = "idle" | "saving" | "success" | "duplicate" | "error";
@@ -62,37 +57,13 @@ export default function SmartBar() {
 
     try {
       const url = normalizeUrl(input);
+      const result = await saveLink(url);
 
-      const scrapeResult = await scrapeUrl(url);
-      if (!scrapeResult.success || !scrapeResult.data) {
-        setSaveState("error");
-        setSaveMessage("Failed to fetch the URL. Check the link and try again.");
-        return;
-      }
-
-      const { title, markdown } = scrapeResult.data;
-
-      const dupResult = await checkDuplicate(markdown, "website");
-      if (dupResult.isDuplicate) {
+      if (result.error === "duplicate") {
         setSaveState("duplicate");
         setSaveMessage("You've already saved this blog.");
         return;
       }
-      if (dupResult.error || !dupResult.checksum) {
-        setSaveState("error");
-        setSaveMessage("Something went wrong. Please try again.");
-        return;
-      }
-
-      const embeddings = await generateTextEmbedding(markdown);
-
-      const result = await saveWebsite(
-        markdown,
-        title,
-        url,
-        dupResult.checksum,
-        embeddings
-      );
 
       if (result.error) {
         setSaveState("error");
@@ -101,7 +72,7 @@ export default function SmartBar() {
       }
 
       setSaveState("success");
-      setSaveMessage("Saved!");
+      setSaveMessage("Saved! Indexing in background...");
 
       setTimeout(() => {
         setInput("");

@@ -1,5 +1,7 @@
 export type ContentType = "all" | "website" | "note";
 
+export type PageStatus = "indexing" | "ready" | "failed";
+
 export interface Page {
   id: string;
   name: string;
@@ -7,6 +9,7 @@ export interface Page {
   max_similarity: number | null;
   created_at: string;
   type: ContentType;
+  status: PageStatus;
 }
 
 export interface ResultType {
