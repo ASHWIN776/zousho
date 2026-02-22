@@ -19,7 +19,7 @@ export default async function Page({
 
   return (
     <div className="flex-1 px-4 py-8">
-    <div className="space-y-8 text-white">
+    <div className="space-y-8">
       <h1 className="text-4xl font-semibold">
         <span className="bg-gradient-to-r text-foreground">Library</span>
       </h1>

@@ -121,7 +121,7 @@ export default function SmartBar() {
                 }
               }}
               placeholder="Search your library or paste a URL to save"
-              className={`dark:bg-zinc-800/50 dark:border-zinc-700 pr-20 ${borderClass}`}
+              className={`pr-20 ${borderClass}`}
               disabled={isSaving}
             />
           </div>
@@ -148,7 +148,7 @@ export default function SmartBar() {
             className={
               mode === "save"
                 ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-foreground"
+                : "bg-foreground text-background"
             }
           >
             {isSaving ? (

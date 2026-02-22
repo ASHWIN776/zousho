@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   {
@@ -54,6 +55,7 @@ export default function Navbar() {
             Add Content
           </Button>
         </Link>
+        <ThemeToggle />
         <UserButton
           appearance={{
             elements: {
