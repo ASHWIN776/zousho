@@ -44,7 +44,7 @@ export default function DeleteContentDialog({
       <AlertDialogTrigger
         className="flex items-start"
       >
-        <Trash2 className="w-4 h-4 text-zinc-400" />
+        <Trash2 className="w-4 h-4 text-red-500 hover:text-destructive" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
