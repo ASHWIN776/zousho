@@ -9,12 +9,12 @@ import { UserButton } from "@clerk/nextjs";
 
 const links = [
   {
-    title: "Chat",
-    url: "/chat"
-  },
-  {
     title: "Library",
     url: "/library"
+  },
+  {
+    title: "Chat",
+    url: "/chat"
   }
 ]
 
