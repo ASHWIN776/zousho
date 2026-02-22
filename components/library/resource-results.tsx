@@ -1,6 +1,13 @@
 import { ContentType } from "@/lib/types";
-import ResourceCard from "./resource-card";
 import { fetchPages, searchQuery } from "@/lib/actions";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import ResourceRow from "./resource-card";
 
 interface Props {
   query?: string
@@ -35,13 +42,23 @@ export default async function ResourceResults({
 
   // If there are pages in the library
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {pages.map((page, index) => (
-        <ResourceCard 
-          key={index}
-          page={page}
-        />
-      ))}
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow className="h-12">
+          <TableHead>Title</TableHead>
+          <TableHead>Date Added</TableHead>
+          <TableHead className="w-[50px]" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {pages.map((page, index) => (
+          <ResourceRow
+            key={index}
+            page={page}
+            showSimilarity={!!query}
+          />
+        ))}
+      </TableBody>
+    </Table>
   )
 }
