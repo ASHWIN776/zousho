@@ -27,7 +27,7 @@ export default function Navbar() {
       <NavigationMenu>
         <NavigationMenuList className="gap-6">
           <NavigationMenuItem>
-            <Link href="/" legacyBehavior passHref>
+            <Link href="/">
               <NavigationMenuLink className="text-lg">
                 Recall
               </NavigationMenuLink>
@@ -37,7 +37,7 @@ export default function Navbar() {
             {
               links.map(navLink => (
                 <NavigationMenuItem key={navLink.title} className="text-sm">
-                  <Link href={navLink.url} legacyBehavior passHref>
+                  <Link href={navLink.url}>
                     <NavigationMenuLink className={isCurrentPath(navLink.url) ? "text-foreground" : "transition-colors hover:text-foreground text-foreground/80"}>
                       {navLink.title}
                     </NavigationMenuLink>
