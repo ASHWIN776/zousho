@@ -1,5 +1,5 @@
 import Results from "@/components/library/resource-results";
-import SearchForm from "@/components/library/search-form";
+import SmartBar from "@/components/library/smart-bar";
 import ResultSkeleton from "@/components/skeleton/result-skeleton";
 import { ContentType } from "@/lib/types";
 import { Suspense } from "react";
@@ -24,8 +24,10 @@ export default async function Page({
         <span className="bg-gradient-to-r text-foreground">Library</span>
       </h1>
 
-      {/* Search Form */}
-      <SearchForm />
+      {/* Smart Bar */}
+      <Suspense fallback={<div className="h-9" />}>
+        <SmartBar />
+      </Suspense>
 
       {/* Search Results */}
       <Suspense
