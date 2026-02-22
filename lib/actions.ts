@@ -3,7 +3,7 @@
 import { getEmbedding } from "./generateEmbeddings";
 import { scrape } from "./scrape";
 import { createClient } from "@/utils/supabase/server";
-import { ActionResponse, ContentType, Page } from "./types";
+import { ActionResponse, ContentType, Page, PageSection } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 import { auth } from '@clerk/nextjs/server'
@@ -193,11 +193,11 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
-    }).returns<Page[]>();
+    })
 
     if(error) throw error
 
-    return data
+    return data as Page[]
     
   } catch (error) {
     console.error(error);
@@ -220,16 +220,11 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
       query_embedding: embeddings,
       match_limit: 5,
       ...(page_type !== "all" ? { type_input: page_type } : {})
-    }).returns<{
-      page_id: number,
-      section_id: number,
-      section_content: string,
-      similarity: number
-    }[]>();
+    })
 
-    if (error) throw error
+    if (error || !data) throw error
 
-    return data.map(({ section_content, similarity }) => ({
+    return (data as PageSection[]).map(({ section_content, similarity }) => ({
       content: section_content,
       similarity
     }))
@@ -251,11 +246,10 @@ export const fetchPages = async (type: ContentType) => {
     .eq("user_id", userId)
     .in("type", page_type)
     .order("created_at", { ascending: false })
-    .returns<Page[]>();
 
     if (error) throw error
 
-    return pages
+    return pages as Page[]
   } catch (error) {
     console.error(error);
     return []
@@ -273,14 +267,13 @@ export const deletePage = async (pageId: string): Promise<ActionResponse<Page | 
     .eq("user_id", userId)
     .eq("id", pageId)
     .select()
-    .returns<Page[]>();
 
     if (error) throw error
     
     revalidateLibrary();
     
     return {
-      data: data[0],
+      data: (data as Page[])[0],
       error: null
     }
   } catch (error) {
@@ -302,12 +295,11 @@ export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: s
     .select("name, content, created_at")
     .eq("user_id", userId)
     .eq("id", pageId)
-    .returns<{name: string, content: string, created_at: string}[]>()
 
     if (error) throw error
 
     return {
-      data: data[0],
+      data: (data as {name: string, content: string, created_at: string}[])[0],
       error: null
     }
   } catch (error) {
