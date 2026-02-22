@@ -1,6 +1,6 @@
-import { HfInference } from '@huggingface/inference'
+import { InferenceClient } from '@huggingface/inference'
 
-const hf = new HfInference(process.env.HF_TOKEN)
+const hf = new InferenceClient(process.env.HF_TOKEN)
 
 export const getEmbedding = async (text: string) => {
   return hf.featureExtraction({
