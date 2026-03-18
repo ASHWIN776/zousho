@@ -14,7 +14,7 @@ export default async function Index() {
         </div>
       </div>
       <SignedIn>
-        <Link href="/chat">
+        <Link href="/library">
           <Button>
             Try the App
             <MoveRight />

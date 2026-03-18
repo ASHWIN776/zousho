@@ -12,10 +12,6 @@ const links = [
   {
     title: "Library",
     url: "/library"
-  },
-  {
-    title: "Chat",
-    url: "/chat"
   }
 ]
 
