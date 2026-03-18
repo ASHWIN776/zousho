@@ -3,16 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
 import { useState, useCallback } from "react";
 import { Search, Link, Loader2, Check, AlertTriangle } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { saveLink } from "@/lib/actions";
 
 type Mode = "idle" | "search" | "save";
@@ -40,16 +32,15 @@ export default function SmartBar() {
   const [input, setInput] = useState(searchParams.get("query") ?? "");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
-  const [type, setType] = useState(searchParams.get("type") ?? "all");
 
   const mode = detectMode(input);
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams(searchParams);
     params.set("query", input);
-    params.set("type", type);
+    params.set("type", 'all');
     replace(`${pathname}?${params.toString()}`);
-  }, [input, type, searchParams, pathname, replace]);
+  }, [input, searchParams, pathname, replace]);
 
   const handleSave = useCallback(async () => {
     setSaveState("saving");
@@ -85,7 +76,7 @@ export default function SmartBar() {
     }
   }, [input]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
 
@@ -120,27 +111,11 @@ export default function SmartBar() {
                   setSaveMessage("");
                 }
               }}
-              placeholder="Search your library or paste a URL to save"
+              placeholder="Search or paste a URL to save"
               className={`pr-20 ${borderClass}`}
               disabled={isSaving}
             />
           </div>
-
-          {mode !== "save" && (
-            <Select
-              value={type}
-              onValueChange={setType}
-            >
-              <SelectTrigger className="mr-4 lg:mr-0 w-[calc(100%_-120px)] lg:w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="website">Website</SelectItem>
-                <SelectItem value="note">Note</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
 
           <Button
             type="submit"
