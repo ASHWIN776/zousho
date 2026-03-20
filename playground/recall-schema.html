@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recall — Database Schema Explorer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
+  code, .mono { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+
+  /* Sidebar */
+  .sidebar { width: 280px; min-width: 280px; background: #161822; border-right: 1px solid #2a2d3a; display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #2a2d3a; }
+  .sidebar-header h1 { font-size: 16px; font-weight: 600; color: #f8fafc; margin-bottom: 2px; }
+  .sidebar-header p { font-size: 11px; color: #64748b; }
+
+  .section { padding: 12px 16px; border-bottom: 1px solid #2a2d3a; }
+  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #475569; margin-bottom: 10px; }
+
+  .toggle-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; user-select: none; }
+  .toggle-row input { accent-color: #818cf8; width: 14px; height: 14px; cursor: pointer; }
+  .toggle-row label { font-size: 13px; color: #cbd5e1; cursor: pointer; flex: 1; }
+  .toggle-row .badge { font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: 600; }
+
+  .comment-list { padding: 0; }
+  .comment-item { background: #1e2030; border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12px; position: relative; }
+  .comment-item .target { color: #818cf8; font-weight: 600; font-size: 11px; margin-bottom: 4px; }
+  .comment-item .text { color: #94a3b8; line-height: 1.4; }
+  .comment-item .delete-btn { position: absolute; top: 6px; right: 8px; background: none; border: none; color: #475569; cursor: pointer; font-size: 14px; line-height: 1; }
+  .comment-item .delete-btn:hover { color: #ef4444; }
+  .no-comments { font-size: 12px; color: #475569; font-style: italic; }
+
+  /* Main area */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Canvas */
+  .canvas-wrapper { flex: 1; position: relative; overflow: hidden; background: #0f1117; }
+  .canvas-wrapper svg { width: 100%; height: 100%; }
+
+  /* Zoom controls */
+  .zoom-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; }
+  .zoom-btn { width: 32px; height: 32px; background: #1e2030; border: 1px solid #2a2d3a; border-radius: 6px; color: #cbd5e1; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .zoom-btn:hover { background: #2a2d3a; }
+
+  /* Legend */
+  .legend { position: absolute; bottom: 12px; left: 12px; background: #161822ee; border: 1px solid #2a2d3a; border-radius: 8px; padding: 10px 14px; font-size: 11px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; color: #94a3b8; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-line { width: 20px; height: 2px; }
+
+  /* Detail panel */
+  .detail-panel { position: absolute; top: 12px; left: 12px; max-width: 340px; background: #161822f0; border: 1px solid #2a2d3a; border-radius: 8px; padding: 16px; font-size: 12px; backdrop-filter: blur(8px); display: none; }
+  .detail-panel.visible { display: block; }
+  .detail-panel h3 { font-size: 14px; color: #f8fafc; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .detail-panel .close-btn { margin-left: auto; background: none; border: none; color: #64748b; cursor: pointer; font-size: 16px; }
+  .detail-panel .close-btn:hover { color: #e2e8f0; }
+  .detail-panel .col-row { display: flex; align-items: center; padding: 3px 0; gap: 6px; }
+  .detail-panel .col-name { color: #e2e8f0; font-family: 'SF Mono', monospace; font-size: 12px; min-width: 100px; }
+  .detail-panel .col-type { color: #818cf8; font-family: 'SF Mono', monospace; font-size: 11px; }
+  .detail-panel .col-badge { font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 700; }
+  .pk-badge { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+  .fk-badge { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+  .nn-badge { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+  .uq-badge { background: #a78bfa22; color: #a78bfa; border: 1px solid #a78bfa44; }
+  .rt-badge { background: #10b98122; color: #34d399; border: 1px solid #10b98144; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+  .detail-panel .constraint { color: #64748b; font-size: 10px; margin-top: 6px; font-style: italic; }
+  .detail-panel .fn-sig { font-family: 'SF Mono', monospace; font-size: 11px; color: #c4b5fd; background: #1e2030; padding: 10px; border-radius: 6px; margin-top: 6px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+  .detail-panel .fn-param { color: #94a3b8; }
+  .detail-panel .fn-type { color: #818cf8; }
+  .detail-panel .fn-returns { color: #34d399; margin-top: 6px; font-size: 11px; }
+
+  /* Bottom prompt */
+  .prompt-area { border-top: 1px solid #2a2d3a; background: #161822; padding: 12px 16px; max-height: 160px; overflow-y: auto; }
+  .prompt-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .prompt-bar span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #475569; }
+  .copy-btn { margin-left: auto; padding: 4px 12px; background: #818cf8; border: none; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .copy-btn:hover { background: #6366f1; }
+  .prompt-text { font-family: 'SF Mono', monospace; font-size: 11px; color: #94a3b8; line-height: 1.5; white-space: pre-wrap; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: #000000aa; display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay.visible { display: flex; }
+  .modal { background: #1e2030; border: 1px solid #2a2d3a; border-radius: 10px; padding: 20px; width: 360px; }
+  .modal h3 { font-size: 14px; color: #f8fafc; margin-bottom: 12px; }
+  .modal textarea { width: 100%; height: 80px; background: #0f1117; border: 1px solid #2a2d3a; border-radius: 6px; color: #e2e8f0; padding: 10px; font-size: 12px; font-family: inherit; resize: vertical; }
+  .modal textarea:focus { outline: none; border-color: #818cf8; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .modal-actions button { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-cancel { background: #2a2d3a; color: #94a3b8; }
+  .btn-save { background: #818cf8; color: #fff; }
+  .btn-save:hover { background: #6366f1; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>Recall Schema</h1>
+    <p>Supabase / PostgreSQL</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Visibility</div>
+    <div class="toggle-row">
+      <input type="checkbox" id="show-tables" checked>
+      <label for="show-tables">Tables</label>
+      <span class="badge" style="background:#818cf822;color:#818cf8;">3</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="show-enums" checked>
+      <label for="show-enums">Enums</label>
+      <span class="badge" style="background:#f59e0b22;color:#fbbf24;">2</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="show-types" checked>
+      <label for="show-types">Composite Types</label>
+      <span class="badge" style="background:#a78bfa22;color:#a78bfa;">1</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="show-functions" checked>
+      <label for="show-functions">Functions</label>
+      <span class="badge" style="background:#10b98122;color:#34d399;">4</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="show-relationships" checked>
+      <label for="show-relationships">Relationships</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comments <span id="comment-count">(0)</span></div>
+    <div id="comment-list">
+      <div class="no-comments">Click any element to add a comment</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="canvas-wrapper" id="canvas-wrapper">
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="zoomIn()">+</button>
+      <button class="zoom-btn" onclick="zoomOut()">−</button>
+      <button class="zoom-btn" onclick="zoomReset()" style="font-size:12px;">⟲</button>
+    </div>
+    <div class="legend" id="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#818cf8;"></div> Table</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b;"></div> Enum</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#a78bfa;"></div> Type</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#10b981;"></div> Function</div>
+      <div class="legend-item"><svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#3b82f6" stroke-width="2"/></svg> FK</div>
+    </div>
+    <div class="detail-panel" id="detail-panel">
+      <h3 id="detail-title"><span id="detail-name"></span><button class="close-btn" onclick="closeDetail()">×</button></h3>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <div class="prompt-area">
+    <div class="prompt-bar">
+      <span>Prompt Output</span>
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+    </div>
+    <div class="prompt-text" id="prompt-output">Click on schema elements to add comments and generate a prompt.</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">Add Comment</h3>
+    <textarea id="modal-textarea" placeholder="Your comment about this element..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveComment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  show: { tables: true, enums: true, types: true, functions: true, relationships: true },
+  zoom: 1,
+  panX: 0, panY: 0,
+  selected: null,
+  comments: [],
+  dragging: false, dragStartX: 0, dragStartY: 0, panStartX: 0, panStartY: 0,
+  modalTarget: null
+};
+
+// Schema data
+const tables = [
+  {
+    id: 'users', label: 'users', x: 120, y: 80, color: '#818cf8',
+    columns: [
+      { name: 'id', type: 'text', pk: true },
+      { name: 'username', type: 'text', nn: true },
+      { name: 'email', type: 'text', nn: true, unique: true }
+    ]
+  },
+  {
+    id: 'pages', label: 'pages', x: 460, y: 80, color: '#818cf8', realtime: true,
+    columns: [
+      { name: 'id', type: 'bigint', pk: true, note: 'auto-generated' },
+      { name: 'name', type: 'text', nn: true },
+      { name: 'path', type: 'text' },
+      { name: 'user_id', type: 'text', nn: true, fk: 'users.id' },
+      { name: 'created_at', type: 'timestamptz', default: 'now()' },
+      { name: 'type', type: 'page_type', nn: true, default: "'website'" },
+      { name: 'content', type: 'text' },
+      { name: 'checksum', type: 'text', nn: true, default: "''" },
+      { name: 'status', type: 'page_status', nn: true, default: "'ready'" }
+    ]
+  },
+  {
+    id: 'page_sections', label: 'page_sections', x: 820, y: 80, color: '#818cf8',
+    columns: [
+      { name: 'id', type: 'bigint', pk: true, note: 'auto-generated' },
+      { name: 'page_id', type: 'bigint', nn: true, fk: 'pages.id' },
+      { name: 'content', type: 'text', nn: true },
+      { name: 'embedding', type: 'vector(1024)' }
+    ]
+  }
+];
+
+const enums = [
+  { id: 'page_type', label: 'page_type', x: 460, y: 380, color: '#f59e0b', values: ['website', 'note', 'media'] },
+  { id: 'page_status', label: 'page_status', x: 680, y: 380, color: '#f59e0b', values: ['indexing', 'ready', 'failed'] }
+];
+
+const compositeTypes = [
+  { id: 'page_section_data', label: 'page_section_data', x: 160, y: 380, color: '#a78bfa', fields: [
+    { name: 'content', type: 'text' },
+    { name: 'embedding', type: 'vector(1024)' }
+  ]}
+];
+
+const functions = [
+  {
+    id: 'add_page', label: 'add_page()', x: 100, y: 520, color: '#10b981',
+    params: [
+      { name: 'user_id_input', type: 'text' },
+      { name: 'name_input', type: 'text' },
+      { name: 'page_content', type: 'text' },
+      { name: 'page_section_data_input', type: 'page_section_data[]' },
+      { name: 'type_input', type: 'page_type' },
+      { name: 'path_input', type: 'text' },
+      { name: 'checksum_input', type: 'text' }
+    ],
+    returns: 'bigint'
+  },
+  {
+    id: 'add_page_sections', label: 'add_page_sections()', x: 380, y: 520, color: '#10b981',
+    params: [
+      { name: 'page_id_input', type: 'bigint' },
+      { name: 'page_section_data_input', type: 'page_section_data[]' }
+    ],
+    returns: 'void'
+  },
+  {
+    id: 'get_matched_pages', label: 'get_matched_pages()', x: 620, y: 520, color: '#10b981',
+    params: [
+      { name: 'user_id_input', type: 'text' },
+      { name: 'query_embedding', type: 'vector(1024)' },
+      { name: 'match_limit', type: 'int' },
+      { name: 'type_input', type: 'page_type', default: 'NULL' }
+    ],
+    returns: 'table(id, name, path, type, max_similarity, created_at)'
+  },
+  {
+    id: 'get_matched_page_sections', label: 'get_matched_page_sections()', x: 880, y: 520, color: '#10b981',
+    params: [
+      { name: 'user_id_input', type: 'text' },
+      { name: 'query_embedding', type: 'vector(1024)' },
+      { name: 'match_limit', type: 'int' },
+      { name: 'type_input', type: 'page_type', default: 'NULL' }
+    ],
+    returns: 'table(page_id, section_id, section_content, similarity)'
+  }
+];
+
+const relationships = [
+  { from: 'users', to: 'pages', fromCol: 'id', toCol: 'user_id', label: '1:N', onDelete: 'CASCADE' },
+  { from: 'pages', to: 'page_sections', fromCol: 'id', toCol: 'page_id', label: '1:N', onDelete: 'CASCADE' }
+];
+
+const svg = document.getElementById('canvas');
+const ROW_H = 22;
+const HEADER_H = 34;
+const COL_W = 240;
+const ENUM_W = 170;
+const TYPE_W = 200;
+const FN_W = 210;
+const PADDING = 12;
+
+function nodeHeight(table) { return HEADER_H + table.columns.length * ROW_H + 8; }
+function enumHeight(e) { return HEADER_H + e.values.length * ROW_H + 8; }
+function typeHeight(t) { return HEADER_H + t.fields.length * ROW_H + 8; }
+
+function getAllNodes() {
+  const nodes = [];
+  if (state.show.tables) tables.forEach(t => nodes.push({ ...t, kind: 'table', w: COL_W, h: nodeHeight(t) }));
+  if (state.show.enums) enums.forEach(e => nodes.push({ ...e, kind: 'enum', w: ENUM_W, h: enumHeight(e) }));
+  if (state.show.types) compositeTypes.forEach(t => nodes.push({ ...t, kind: 'type', w: TYPE_W, h: typeHeight(t) }));
+  if (state.show.functions) functions.forEach(f => nodes.push({ ...f, kind: 'function', w: FN_W, h: 44 }));
+  return nodes;
+}
+
+function render() {
+  const nodes = getAllNodes();
+  let html = '';
+
+  // Defs
+  html += `<defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/></marker>
+    <filter id="glow"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>`;
+
+  // Relationships
+  if (state.show.relationships && state.show.tables) {
+    relationships.forEach(rel => {
+      const from = tables.find(t => t.id === rel.from);
+      const to = tables.find(t => t.id === rel.to);
+      if (!from || !to) return;
+
+      const fromIdx = from.columns.findIndex(c => c.name === rel.fromCol);
+      const toIdx = to.columns.findIndex(c => c.name === rel.toCol);
+      const x1 = from.x + COL_W;
+      const y1 = from.y + HEADER_H + fromIdx * ROW_H + ROW_H / 2;
+      const x2 = to.x;
+      const y2 = to.y + HEADER_H + toIdx * ROW_H + ROW_H / 2;
+      const cx1 = x1 + 50;
+      const cx2 = x2 - 50;
+
+      const isHighlighted = state.selected === rel.from || state.selected === rel.to;
+      const opacity = state.selected && !isHighlighted ? 0.15 : 1;
+      const stroke = isHighlighted ? '#60a5fa' : '#3b82f6';
+      const sw = isHighlighted ? 2.5 : 1.5;
+
+      html += `<path d="M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}" fill="none" stroke="${stroke}" stroke-width="${sw}" marker-end="url(#arrow)" opacity="${opacity}"/>`;
+      // Label
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2 - 8;
+      html += `<text x="${mx}" y="${my}" text-anchor="middle" font-size="10" fill="#64748b" opacity="${opacity}">${rel.label} (ON DELETE ${rel.onDelete})</text>`;
+    });
+  }
+
+  // Nodes
+  nodes.forEach(node => {
+    const isSelected = state.selected === node.id;
+    const dimmed = state.selected && !isSelected && !relationships.some(r => (r.from === state.selected && r.to === node.id) || (r.to === state.selected && r.from === node.id));
+    const opacity = dimmed ? 0.25 : 1;
+    const hasComment = state.comments.some(c => c.target === node.id);
+    const borderColor = hasComment ? '#fbbf24' : (isSelected ? node.color : '#2a2d3a');
+    const borderW = isSelected || hasComment ? 2 : 1;
+
+    html += `<g opacity="${opacity}" cursor="pointer" onclick="selectNode('${node.id}')" ondblclick="openModal('${node.id}')">`;
+
+    if (node.kind === 'table') {
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${node.h}" rx="8" fill="#1a1d2e" stroke="${borderColor}" stroke-width="${borderW}" filter="url(#glow)"/>`;
+      // Header
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${HEADER_H}" rx="8" fill="${node.color}18"/>`;
+      html += `<rect x="${node.x}" y="${node.y + HEADER_H - 4}" width="${node.w}" height="4" fill="${node.color}18"/>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 22}" font-size="13" font-weight="700" fill="${node.color}">${node.label}</text>`;
+      if (node.realtime) {
+        html += `<text x="${node.x + node.w - PADDING}" y="${node.y + 21}" text-anchor="end" font-size="9" font-weight="700" fill="#34d399">⚡ REALTIME</text>`;
+      }
+      // Columns
+      node.columns.forEach((col, i) => {
+        const cy = node.y + HEADER_H + i * ROW_H + 16;
+        html += `<text x="${node.x + PADDING}" y="${cy}" font-size="12" fill="#e2e8f0" font-family="'SF Mono',monospace">${col.name}</text>`;
+        html += `<text x="${node.x + 130}" y="${cy}" font-size="11" fill="#818cf8" font-family="'SF Mono',monospace">${col.type}</text>`;
+        let bx = node.x + node.w - PADDING;
+        if (col.pk) { bx -= 20; html += `<text x="${bx}" y="${cy}" font-size="9" font-weight="700" fill="#fbbf24">PK</text>`; }
+        if (col.fk) { bx -= 20; html += `<text x="${bx}" y="${cy}" font-size="9" font-weight="700" fill="#60a5fa">FK</text>`; }
+        if (col.nn) { bx -= 20; html += `<text x="${bx}" y="${cy}" font-size="9" font-weight="600" fill="#64748b">NN</text>`; }
+        if (col.unique) { bx -= 20; html += `<text x="${bx}" y="${cy}" font-size="9" font-weight="600" fill="#a78bfa">UQ</text>`; }
+      });
+    } else if (node.kind === 'enum') {
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${node.h}" rx="8" fill="#1a1d2e" stroke="${borderColor}" stroke-width="${borderW}" filter="url(#glow)"/>`;
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${HEADER_H}" rx="8" fill="${node.color}18"/>`;
+      html += `<rect x="${node.x}" y="${node.y + HEADER_H - 4}" width="${node.w}" height="4" fill="${node.color}18"/>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 14}" font-size="9" fill="#f59e0b88" font-weight="600">ENUM</text>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 27}" font-size="13" font-weight="700" fill="${node.color}">${node.label}</text>`;
+      node.values.forEach((v, i) => {
+        const cy = node.y + HEADER_H + i * ROW_H + 16;
+        html += `<text x="${node.x + PADDING}" y="${cy}" font-size="12" fill="#cbd5e1" font-family="'SF Mono',monospace">'${v}'</text>`;
+      });
+    } else if (node.kind === 'type') {
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${node.h}" rx="8" fill="#1a1d2e" stroke="${borderColor}" stroke-width="${borderW}" filter="url(#glow)"/>`;
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${HEADER_H}" rx="8" fill="${node.color}18"/>`;
+      html += `<rect x="${node.x}" y="${node.y + HEADER_H - 4}" width="${node.w}" height="4" fill="${node.color}18"/>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 14}" font-size="9" fill="#a78bfa88" font-weight="600">TYPE</text>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 27}" font-size="13" font-weight="700" fill="${node.color}">${node.label}</text>`;
+      node.fields.forEach((f, i) => {
+        const cy = node.y + HEADER_H + i * ROW_H + 16;
+        html += `<text x="${node.x + PADDING}" y="${cy}" font-size="12" fill="#e2e8f0" font-family="'SF Mono',monospace">${f.name}</text>`;
+        html += `<text x="${node.x + 100}" y="${cy}" font-size="11" fill="#a78bfa" font-family="'SF Mono',monospace">${f.type}</text>`;
+      });
+    } else if (node.kind === 'function') {
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${node.h}" rx="8" fill="#1a1d2e" stroke="${borderColor}" stroke-width="${borderW}" filter="url(#glow)"/>`;
+      html += `<rect x="${node.x}" y="${node.y}" width="${node.w}" height="${node.h}" rx="8" fill="${node.color}0a"/>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 16}" font-size="9" fill="#10b98188" font-weight="600">FUNCTION</text>`;
+      html += `<text x="${node.x + PADDING}" y="${node.y + 32}" font-size="12" font-weight="700" fill="${node.color}" font-family="'SF Mono',monospace">${node.label}</text>`;
+    }
+
+    html += '</g>';
+  });
+
+  svg.innerHTML = html;
+  updateViewBox();
+}
+
+function updateViewBox() {
+  const w = svg.parentElement.clientWidth;
+  const h = svg.parentElement.clientHeight;
+  const vw = w / state.zoom;
+  const vh = h / state.zoom;
+  svg.setAttribute('viewBox', `${state.panX} ${state.panY} ${vw} ${vh}`);
+}
+
+function zoomIn() { state.zoom = Math.min(state.zoom * 1.2, 3); updateViewBox(); }
+function zoomOut() { state.zoom = Math.max(state.zoom / 1.2, 0.3); updateViewBox(); }
+function zoomReset() { state.zoom = 1; state.panX = 0; state.panY = 0; updateViewBox(); }
+
+// Pan
+const wrapper = document.getElementById('canvas-wrapper');
+wrapper.addEventListener('mousedown', (e) => {
+  if (e.target.closest('g')) return;
+  state.dragging = true;
+  state.dragStartX = e.clientX;
+  state.dragStartY = e.clientY;
+  state.panStartX = state.panX;
+  state.panStartY = state.panY;
+  wrapper.style.cursor = 'grabbing';
+});
+window.addEventListener('mousemove', (e) => {
+  if (!state.dragging) return;
+  const dx = (e.clientX - state.dragStartX) / state.zoom;
+  const dy = (e.clientY - state.dragStartY) / state.zoom;
+  state.panX = state.panStartX - dx;
+  state.panY = state.panStartY - dy;
+  updateViewBox();
+});
+window.addEventListener('mouseup', () => { state.dragging = false; wrapper.style.cursor = ''; });
+wrapper.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.deltaY < 0) zoomIn(); else zoomOut();
+}, { passive: false });
+
+function selectNode(id) {
+  state.selected = state.selected === id ? null : id;
+  render();
+  showDetail(id);
+}
+
+function showDetail(id) {
+  const panel = document.getElementById('detail-panel');
+  const nameEl = document.getElementById('detail-name');
+  const body = document.getElementById('detail-body');
+
+  if (!state.selected) { panel.classList.remove('visible'); return; }
+
+  panel.classList.add('visible');
+  let html = '';
+
+  const table = tables.find(t => t.id === id);
+  if (table) {
+    nameEl.textContent = table.label;
+    if (table.realtime) html += `<span class="rt-badge">⚡ Realtime Enabled</span><br><br>`;
+    table.columns.forEach(col => {
+      html += `<div class="col-row">
+        <span class="col-name">${col.name}</span>
+        <span class="col-type">${col.type}</span>`;
+      if (col.pk) html += ` <span class="col-badge pk-badge">PK</span>`;
+      if (col.fk) html += ` <span class="col-badge fk-badge">FK → ${col.fk}</span>`;
+      if (col.nn) html += ` <span class="col-badge nn-badge">NOT NULL</span>`;
+      if (col.unique) html += ` <span class="col-badge uq-badge">UNIQUE</span>`;
+      html += `</div>`;
+      if (col.default) html += `<div style="margin-left:106px;font-size:10px;color:#64748b;">DEFAULT ${col.default}</div>`;
+    });
+    const rels = relationships.filter(r => r.from === id || r.to === id);
+    if (rels.length) {
+      html += `<div class="constraint">Relationships:</div>`;
+      rels.forEach(r => {
+        html += `<div style="font-size:11px;color:#94a3b8;margin-top:2px;">• ${r.from}.${r.fromCol} → ${r.to}.${r.toCol} (ON DELETE ${r.onDelete})</div>`;
+      });
+    }
+    body.innerHTML = html;
+    return;
+  }
+
+  const en = enums.find(e => e.id === id);
+  if (en) {
+    nameEl.textContent = `enum ${en.label}`;
+    html += en.values.map(v => `<div class="col-row"><span class="col-name" style="color:#fbbf24;">'${v}'</span></div>`).join('');
+    body.innerHTML = html;
+    return;
+  }
+
+  const ct = compositeTypes.find(t => t.id === id);
+  if (ct) {
+    nameEl.textContent = `type ${ct.label}`;
+    ct.fields.forEach(f => {
+      html += `<div class="col-row"><span class="col-name">${f.name}</span><span class="col-type">${f.type}</span></div>`;
+    });
+    body.innerHTML = html;
+    return;
+  }
+
+  const fn = functions.find(f => f.id === id);
+  if (fn) {
+    nameEl.textContent = fn.label;
+    let sig = fn.label.replace('()', '') + '(\n';
+    fn.params.forEach((p, i) => {
+      sig += `  ${p.name} <span class="fn-type">${p.type}</span>`;
+      if (p.default) sig += ` DEFAULT ${p.default}`;
+      if (i < fn.params.length - 1) sig += ',';
+      sig += '\n';
+    });
+    sig += ')';
+    html += `<div class="fn-sig">${sig}</div>`;
+    html += `<div class="fn-returns">→ returns <strong>${fn.returns}</strong></div>`;
+    body.innerHTML = html;
+    return;
+  }
+}
+
+function closeDetail() {
+  state.selected = null;
+  document.getElementById('detail-panel').classList.remove('visible');
+  render();
+}
+
+// Comments
+function openModal(id) {
+  state.modalTarget = id;
+  const allItems = [...tables, ...enums, ...compositeTypes, ...functions];
+  const item = allItems.find(n => n.id === id);
+  document.getElementById('modal-title').textContent = `Comment on ${item ? item.label : id}`;
+  document.getElementById('modal-textarea').value = '';
+  document.getElementById('modal-overlay').classList.add('visible');
+  setTimeout(() => document.getElementById('modal-textarea').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('visible');
+  state.modalTarget = null;
+}
+
+function saveComment() {
+  const text = document.getElementById('modal-textarea').value.trim();
+  if (!text) { closeModal(); return; }
+  const allItems = [...tables, ...enums, ...compositeTypes, ...functions];
+  const item = allItems.find(n => n.id === state.modalTarget);
+  state.comments.push({
+    id: Date.now(),
+    target: state.modalTarget,
+    targetLabel: item ? item.label : state.modalTarget,
+    text
+  });
+  closeModal();
+  renderComments();
+  updatePrompt();
+  render();
+}
+
+function deleteComment(id) {
+  state.comments = state.comments.filter(c => c.id !== id);
+  renderComments();
+  updatePrompt();
+  render();
+}
+
+function renderComments() {
+  const list = document.getElementById('comment-list');
+  document.getElementById('comment-count').textContent = `(${state.comments.length})`;
+  if (!state.comments.length) {
+    list.innerHTML = '<div class="no-comments">Double-click any element to add a comment</div>';
+    return;
+  }
+  list.innerHTML = state.comments.map(c => `
+    <div class="comment-item">
+      <button class="delete-btn" onclick="deleteComment(${c.id})">×</button>
+      <div class="target">${c.targetLabel}</div>
+      <div class="text">${c.text}</div>
+    </div>
+  `).join('');
+}
+
+function updatePrompt() {
+  const el = document.getElementById('prompt-output');
+  if (!state.comments.length) {
+    el.textContent = 'Click on schema elements to add comments and generate a prompt.';
+    return;
+  }
+
+  const visible = [];
+  if (state.show.tables) visible.push('tables');
+  if (state.show.enums) visible.push('enums');
+  if (state.show.types) visible.push('composite types');
+  if (state.show.functions) visible.push('functions');
+
+  let prompt = `Here is feedback on the Recall database schema (viewing: ${visible.join(', ')}):\n\n`;
+  state.comments.forEach(c => {
+    prompt += `**${c.targetLabel}:**\n${c.text}\n\n`;
+  });
+  el.textContent = prompt.trim();
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 1500);
+}
+
+// Toggle handlers
+['tables', 'enums', 'types', 'functions', 'relationships'].forEach(key => {
+  const el = document.getElementById(`show-${key}`);
+  el.addEventListener('change', () => {
+    state.show[key] = el.checked;
+    render();
+    updatePrompt();
+  });
+});
+
+// Init
+render();
+window.addEventListener('resize', updateViewBox);
+</script>
+</body>
+</html>
