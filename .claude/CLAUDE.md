@@ -20,3 +20,10 @@ Go through the https://supabase.com/llms.txt
 
 4. Shadcn (UI Components)
 Go through the https://ui.shadcn.com/llms.txt
+
+## Database Operations
+
+Use supabase CLI for database operations.
+Some important commands would be:
+1. Create migration: `npx supabase migration new <migration-name>`
+2. Apply migration: `npx supabase migration up --local`

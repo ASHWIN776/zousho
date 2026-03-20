@@ -401,6 +401,21 @@ export const fetchPages = async (type: ContentType) => {
   }
 }
 
+export const toggleReadStatus = async (pageId: string, isRead: boolean) => {
+  const supabase = await createClient();
+  const { userId } = await auth();
+
+  const { error } = await supabase
+    .from("pages")
+    .update({ is_read: isRead })
+    .eq("id", pageId)
+    .eq("user_id", userId);
+
+  if (error) throw new Error("Failed to update read status");
+
+  revalidatePath("/library");
+}
+
 export const deletePage = async (pageId: string): Promise<ActionResponse<Page | null>> => {
   const supabase = await createClient();
   const { userId } = await auth()
