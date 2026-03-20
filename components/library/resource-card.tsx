@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink, Loader2, AlertTriangle } from "lucide-react";
 import { Page, PageStatus } from "@/lib/types";
 import { format } from 'date-fns'
-import { formatTitle } from "@/lib/helper";
+
 import DeleteContentDialog from "./delete-dialog";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
               className="shrink-0"
             />
           )}
-          <span>{formatTitle(title)}</span>
+          <span className="truncate max-w-[80%]">{title}</span>
           {status === "indexing" && (
             <Badge variant="secondary" className="gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />

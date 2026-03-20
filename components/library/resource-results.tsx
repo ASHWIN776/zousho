@@ -45,9 +45,9 @@ export default async function ResourceResults({
     <Table>
       <TableHeader>
         <TableRow className="h-12">
-          <TableHead>Title</TableHead>
-          <TableHead>Date Added</TableHead>
-          <TableHead className="w-[50px]" />
+          <TableHead className="w-[70%]">Title</TableHead>
+          <TableHead className="w-[20%]">Date Added</TableHead>
+          <TableHead className="w-[10%]" />
         </TableRow>
       </TableHeader>
       <TableBody>

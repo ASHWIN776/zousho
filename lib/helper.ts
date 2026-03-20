@@ -5,10 +5,6 @@ import crypto from 'crypto';
 import {marked} from 'marked';
 import DOMPurify from 'dompurify';
 
-export const formatTitle = (title: string) => {
-  return title.length > 40 ? title.substring(0, 40) + "..." : title;
-}
-
 export const cleanUserPrompt = async (prompt: string) => {
   
   const systemMessage: CoreMessage = {
