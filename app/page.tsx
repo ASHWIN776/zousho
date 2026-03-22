@@ -9,8 +9,8 @@ export default async function Index() {
       <div className="flex flex-col justify-center items-center gap-y-1">
         <span className="text-9xl">zousho</span>
         <div className="text-zinc-400 text-md flex flex-col items-center">
-          <span>Save what catches your eye</span>
-          <span>Recall it anytime</span>
+          <span>Curate the internet</span>
+          <span>by saving what catches your eye</span>
         </div>
       </div>
       <SignedIn>

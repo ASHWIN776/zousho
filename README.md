@@ -1,5 +1,5 @@
 ## zousho
-Save what catches your eye, recall it anytime
+Curate the internet by saving what catches your eye
 
 Demo [here](https://youtu.be/IM7XrKOlbWQ)
 
