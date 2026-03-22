@@ -1,8 +1,6 @@
 "use client"
 
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from "@/components/ui/navigation-menu";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
@@ -45,12 +43,6 @@ export default function Navbar() {
         </NavigationMenuList>
       </NavigationMenu>
       <div className="flex items-center gap-x-4">
-        <Link href="/add-content">
-          <Button disabled={isCurrentPath("/add-content")} className="text-sm" size="sm">
-            <Plus/>
-            Add Content
-          </Button>
-        </Link>
         <ThemeToggle />
         <UserButton
           appearance={{
