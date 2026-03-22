@@ -1,4 +1,9 @@
-## Commands
+## Basic Instructions
+
+1. use `pnpm` for package management
+2. use `gh` for github operations
+
+## Dev Commands
 
 ```bash
 pnpm install          # Install dependencies
