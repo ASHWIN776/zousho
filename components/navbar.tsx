@@ -23,7 +23,7 @@ export default function Navbar() {
         <NavigationMenuList className="gap-6">
           <NavigationMenuItem>
             <Link href="/" className="text-lg">
-              Recall
+              zousho
             </Link>
           </NavigationMenuItem>
           <NavigationMenuList className="gap-4">

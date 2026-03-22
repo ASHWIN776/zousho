@@ -1,4 +1,4 @@
-## Recall
+## zousho
 Save what catches your eye, recall it anytime
 
 Demo [here](https://youtu.be/IM7XrKOlbWQ)

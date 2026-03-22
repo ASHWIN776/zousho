@@ -1,4 +1,5 @@
 {
+  "name": "zousho",
   "private": true,
   "scripts": {
     "dev": "next dev",
