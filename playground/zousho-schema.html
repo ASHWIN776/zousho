@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recall — Database Schema Explorer</title>
+<title>Zousho — Database Schema Explorer</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
@@ -96,7 +96,7 @@
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <h1>Recall Schema</h1>
+    <h1>Zousho Schema</h1>
     <p>Supabase / PostgreSQL</p>
   </div>
 
@@ -601,7 +601,7 @@ function updatePrompt() {
   if (state.show.types) visible.push('composite types');
   if (state.show.functions) visible.push('functions');
 
-  let prompt = `Here is feedback on the Recall database schema (viewing: ${visible.join(', ')}):\n\n`;
+  let prompt = `Here is feedback on the Zousho database schema (viewing: ${visible.join(', ')}):\n\n`;
   state.comments.forEach(c => {
     prompt += `**${c.targetLabel}:**\n${c.text}\n\n`;
   });
