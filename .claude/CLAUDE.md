@@ -2,6 +2,7 @@
 
 1. use `pnpm` for package management
 2. use `gh` for github operations
+3. while writing commit messages, do not add co-author lines.
 
 ## Dev Commands
 
