@@ -63,6 +63,9 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
             />
           )}
           <span className={`truncate max-w-[80%] ${isRead ? "text-muted-foreground" : ""}`}>{title}</span>
+          {page.author && (
+            <span className="text-muted-foreground text-sm truncate">by {page.author}</span>
+          )}
           {status === "indexing" && (
             <Badge variant="secondary" className="gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />

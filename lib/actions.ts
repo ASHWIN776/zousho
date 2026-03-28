@@ -220,8 +220,8 @@ const indexPage = async (pageId: number, url: string) => {
   try {
     // 1. Full scrape
     console.log("[indexPage] Scraping full content...");
-    const { title, markdown } = await scrape(url);
-    console.log("[indexPage] Scrape complete — title:", title, "markdown length:", markdown.length);
+    const { title, markdown, author } = await scrape(url);
+    console.log("[indexPage] Scrape complete — title:", title, "markdown length:", markdown.length, "author:", author);
     const checksum = getChecksum(markdown);
     console.log("[indexPage] Checksum:", checksum);
 
@@ -259,6 +259,7 @@ const indexPage = async (pageId: number, url: string) => {
         content: markdown,
         checksum,
         status: "ready",
+        author,
       })
       .eq("id", pageId);
 
@@ -445,21 +446,21 @@ export const deletePage = async (pageId: string): Promise<ActionResponse<Page | 
   }
 }
 
-export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: string, content: string, created_at: string} | null>> => {
+export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: string, content: string, created_at: string, author: string | null} | null>> => {
   const supabase = await createClient();
   const { userId } = await auth()
 
   try {
     const { data, error } = await supabase
     .from("pages")
-    .select("name, content, created_at")
+    .select("name, content, created_at, author")
     .eq("user_id", userId)
     .eq("id", pageId)
 
     if (error) throw error
 
     return {
-      data: (data as {name: string, content: string, created_at: string}[])[0],
+      data: (data as {name: string, content: string, created_at: string, author: string | null}[])[0],
       error: null
     }
   } catch (error) {

@@ -11,6 +11,7 @@ export interface Page {
   type: ContentType;
   status: PageStatus;
   is_read: boolean;
+  author: string | null;
 }
 
 export interface ResultType {

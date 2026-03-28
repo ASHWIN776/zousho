@@ -21,6 +21,7 @@ export const scrape = async (url: string) => {
   // Remove the newlines from the markdown
   return {
     title: article.title,
-    markdown: markdown
+    markdown: markdown,
+    author: article.byline ?? null,
   }
 }
