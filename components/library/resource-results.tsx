@@ -1,12 +1,6 @@
 import { ContentType } from "@/lib/types";
 import { fetchPages, searchQuery } from "@/lib/actions";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { ItemGroup, ItemSeparator } from "@/components/ui/item";
 import ResourceRow from "./resource-card";
 
 interface Props {
@@ -42,23 +36,16 @@ export default async function ResourceResults({
 
   // If there are pages in the library
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="h-12">
-          <TableHead className="w-[70%]">Title</TableHead>
-          <TableHead className="w-[20%]">Date Added</TableHead>
-          <TableHead className="w-[10%]" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {pages.map((page, index) => (
+    <ItemGroup>
+      {pages.map((page, index) => (
+        <div key={index}>
+          {index > 0 && <ItemSeparator />}
           <ResourceRow
-            key={index}
             page={page}
             showSimilarity={!!query}
           />
-        ))}
-      </TableBody>
-    </Table>
+        </div>
+      ))}
+    </ItemGroup>
   )
 }
