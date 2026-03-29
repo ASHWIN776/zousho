@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+
 import { useState, useCallback } from "react";
 import { Search, Link, Loader2, Check, AlertTriangle } from "lucide-react";
 import { saveLink } from "@/lib/actions";
@@ -96,45 +96,35 @@ export default function SmartBar() {
 
   const isSaving = saveState === "saving";
 
+  const iconElement = isSaving ? (
+    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+  ) : mode === "save" ? (
+    <Link className="w-4 h-4 text-orange-500" />
+  ) : (
+    <Search className="w-4 h-4 text-muted-foreground" />
+  );
+
   return (
     <div className="space-y-2">
       <form onSubmit={handleSubmit}>
-        <div className="flex lg:space-x-4 flex-wrap lg:flex-nowrap space-y-4 lg:space-y-0 items-center">
-          <div className="relative flex-grow flex items-center">
-            <Input
-              type="text"
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                if (saveState !== "idle") {
-                  setSaveState("idle");
-                  setSaveMessage("");
-                }
-              }}
-              placeholder="Search or paste a URL to save"
-              className={`pr-20 ${borderClass}`}
-              disabled={isSaving}
-            />
+        <div className="relative flex items-center">
+          <div className="absolute left-3 pointer-events-none">
+            {iconElement}
           </div>
-
-          <Button
-            type="submit"
-            disabled={isSaving || !input.trim()}
-            className={
-              mode === "save"
-                ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-foreground text-background"
-            }
-          >
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : mode === "save" ? (
-              <Link className="w-4 h-4" />
-            ) : (
-              <Search className="w-4 h-4" />
-            )}
-            {isSaving ? "Saving..." : mode === "save" ? "Save" : "Search"}
-          </Button>
+          <Input
+            type="text"
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              if (saveState !== "idle") {
+                setSaveState("idle");
+                setSaveMessage("");
+              }
+            }}
+            placeholder="Search or paste a URL to save"
+            className={`pl-9 ${borderClass}`}
+            disabled={isSaving}
+          />
         </div>
       </form>
 
