@@ -100,7 +100,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Item className={`py-4 ${status === "indexing" ? "opacity-70" : ""}`}>
+      <Item className={`py-3 sm:py-4 gap-2 sm:gap-4 sm:px-4 px-2 ${status === "indexing" ? "opacity-70" : ""}`}>
         {/* Unread dot */}
         <div className={`w-2 h-2 rounded-full shrink-0 self-start mt-2 ${!isRead ? 'bg-orange-500' : 'invisible'}`} />
 
@@ -115,9 +115,9 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
         </ItemMedia>
 
         {/* Content */}
-        <ItemContent>
-          <ItemTitle className={isRead ? "font-normal" : "font-semibold"}>
-            <Link href={path ?? `/library/${id}`} target={path ? "_blank" : "_self"} className="hover:underline">
+        <ItemContent className="self-start min-w-0">
+          <ItemTitle className={`${isRead ? "font-normal" : "font-semibold"}`}>
+            <Link href={path ?? `/library/${id}`} target={path ? "_blank" : "_self"} className="hover:underline line-clamp-1">
               {title}
             </Link>
             {status === "indexing" && (
@@ -140,13 +140,11 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
             {author && <span>{author}</span>}
             {author && domain && <span> · </span>}
             {domain && <span>{domain}</span>}
-            {domain && <span> · </span>}
-            <MessageSquare className="h-3.5 w-3.5" />
           </ItemDescription>
         </ItemContent>
 
         {/* Right side */}
-        <ItemActions className="self-start">
+        <ItemActions className="self-start flex flex-col sm:flex-row">
           <span className="text-sm text-muted-foreground">
             {format(created_at, 'MMM d')}
           </span>
@@ -159,7 +157,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
       </Item>
 
       <CollapsibleContent>
-        <div className="p-4 pt-0 space-y-3">
+        <div className="p-3 sm:p-4 pt-0 space-y-3">
           {/* Note section */}
           <div className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</span>
@@ -173,7 +171,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
           <p className="text-xs text-muted-foreground">Previewed in list · included in digests</p>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleToggleRead}>
               <Check className="h-4 w-4" />
               {isRead ? "Mark as unread" : "Mark as read"}
