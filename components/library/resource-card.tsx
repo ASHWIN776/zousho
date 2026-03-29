@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import { Loader2, AlertTriangle, MoreHorizontal, MessageSquare } from "lucide-react";
+import { Loader2, AlertTriangle, MessageSquare, Check, ChevronUp } from "lucide-react";
 import { Page, PageStatus } from "@/lib/types";
 import { format } from 'date-fns'
 
@@ -10,13 +10,8 @@ import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions }
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Textarea } from "@/components/ui/textarea";
 import { usePageStatus } from "@/hooks/use-page-status";
 import { toggleReadStatus } from "@/lib/actions";
 import { useState } from "react";
@@ -86,6 +81,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
   const initials = getInitials(author, domain);
   const avatarColor = getAvatarColor(author ?? domain ?? title);
   const [isRead, setIsRead] = useState(initialIsRead);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Subscribe to realtime status updates only for pages still indexing
   const realtimeStatus = usePageStatus(initialStatus === "indexing" ? id : null);
@@ -103,79 +99,91 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
   };
 
   return (
-    <Item className={`py-4 ${status === "indexing" ? "opacity-70" : ""}`}>
-      {/* Unread dot */}
-      <div className={`w-2 h-2 rounded-full shrink-0 self-start mt-2 ${!isRead ? 'bg-orange-500' : 'invisible'}`} />
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Item className={`py-4 ${status === "indexing" ? "opacity-70" : ""}`}>
+        {/* Unread dot */}
+        <div className={`w-2 h-2 rounded-full shrink-0 self-start mt-2 ${!isRead ? 'bg-orange-500' : 'invisible'}`} />
 
-      {/* Favicon / Avatar */}
-      <ItemMedia>
-        <Avatar className="h-6 w-6 rounded">
-          {faviconUrl && <AvatarImage src={faviconUrl} />}
-          <AvatarFallback className={`rounded text-white text-xs font-semibold ${avatarColor}`}>
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      </ItemMedia>
+        {/* Favicon / Avatar */}
+        <ItemMedia>
+          <Avatar className="h-6 w-6 rounded">
+            {faviconUrl && <AvatarImage src={faviconUrl} />}
+            <AvatarFallback className={`rounded text-white text-xs font-semibold ${avatarColor}`}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </ItemMedia>
 
-      {/* Content */}
-      <ItemContent>
-        <ItemTitle className={isRead ? "text-muted-foreground font-normal" : "font-semibold"}>
-          {title}
-          {status === "indexing" && (
-            <Badge variant="secondary" className="gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Indexing
-            </Badge>
-          )}
-          {status === "failed" && (
-            <Badge variant="destructive" className="gap-1">
-              <AlertTriangle className="h-3 w-3" />
-              Failed
-            </Badge>
-          )}
-          {showSimilarity && similarityPercentage && (
-            <Badge variant="secondary">{similarityPercentage}% match</Badge>
-          )}
-        </ItemTitle>
-        <ItemDescription className="flex items-center gap-2">
-          {author && <span>{author}</span>}
-          {author && domain && <span> · </span>}
-          {domain && <span>{domain}</span>}
-          {domain && <span> · </span>}
-          <MessageSquare className="h-3.5 w-3.5" /> {/* Comment: Message icon to denote the presence of note */}
-        </ItemDescription>
-      </ItemContent>
+        {/* Content */}
+        <ItemContent>
+          <ItemTitle className={isRead ? "font-normal" : "font-semibold"}>
+            <Link href={path ?? `/library/${id}`} target={path ? "_blank" : "_self"} className="hover:underline">
+              {title}
+            </Link>
+            {status === "indexing" && (
+              <Badge variant="secondary" className="gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Indexing
+              </Badge>
+            )}
+            {status === "failed" && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Failed
+              </Badge>
+            )}
+            {showSimilarity && similarityPercentage && (
+              <Badge variant="secondary">{similarityPercentage}% match</Badge>
+            )}
+          </ItemTitle>
+          <ItemDescription className="flex items-center gap-2">
+            {author && <span>{author}</span>}
+            {author && domain && <span> · </span>}
+            {domain && <span>{domain}</span>}
+            {domain && <span> · </span>}
+            <MessageSquare className="h-3.5 w-3.5" />
+          </ItemDescription>
+        </ItemContent>
 
-      {/* Right side */}
-      <ItemActions className="self-start">
-        <span className="text-sm text-muted-foreground">
-          {format(created_at, 'MMM d')}
-        </span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        {/* Right side */}
+        <ItemActions className="self-start">
+          <span className="text-sm text-muted-foreground">
+            {format(created_at, 'MMM d')}
+          </span>
+          <CollapsibleTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
+              <ChevronUp className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-0' : 'rotate-180'}`} />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem asChild>
-              <Link href={path ?? `/library/${id}`} target={path ? "_blank" : "_self"}>
-                Open
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleToggleRead}>
+          </CollapsibleTrigger>
+        </ItemActions>
+      </Item>
+
+      <CollapsibleContent>
+        <div className="p-4 pt-0 space-y-3">
+          {/* Note section */}
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</span>
+            <Textarea
+              placeholder="What did you think? What's worth remembering..."
+              className="min-h-[100px] text-sm resize-none"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground">Previewed in list · included in digests</p>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleToggleRead}>
+              <Check className="h-4 w-4" />
               {isRead ? "Mark as unread" : "Mark as read"}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <DeleteContentDialog page={page} />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </ItemActions>
-    </Item>
+            </Button>
+            <div className="ml-auto">
+              <DeleteContentDialog page={page} variant="button" />
+            </div>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }

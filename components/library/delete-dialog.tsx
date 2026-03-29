@@ -13,15 +13,18 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deletePage } from "@/lib/actions"
 import { Page } from "@/lib/types"
+import { Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
 interface Props {
   page: Page
+  variant?: "icon" | "button"
 }
 
 export default function DeleteContentDialog({
   page,
+  variant = "icon",
 }: Props) {
 
   const handleDelete = async (id: Page["id"]) => {
@@ -41,9 +44,12 @@ export default function DeleteContentDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        className="w-full text-left"
+        className={variant === "button"
+          ? "inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-destructive hover:bg-accent hover:text-destructive"
+          : "w-full text-left"
+        }
       >
-        <span>Delete</span>
+        {variant === "button" ? <><Trash2 className="h-4 w-4" /> Delete</> : <span>Delete</span>}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
