@@ -122,7 +122,7 @@ export default function SmartBar() {
               }
             }}
             placeholder="Search or paste a URL to save"
-            className={`pl-9 ${borderClass}`}
+            className={`pl-9 ${borderClass} md:text-base md:h-10`}
             disabled={isSaving}
           />
         </div>
