@@ -209,7 +209,9 @@ const tables = [
       { name: 'type', type: 'page_type', nn: true, default: "'website'" },
       { name: 'content', type: 'text' },
       { name: 'checksum', type: 'text', nn: true, default: "''" },
-      { name: 'status', type: 'page_status', nn: true, default: "'ready'" }
+      { name: 'status', type: 'page_status', nn: true, default: "'ready'" },
+      { name: 'is_read', type: 'boolean', nn: true, default: 'false' },
+      { name: 'author', type: 'text' }
     ]
   },
   {
@@ -265,7 +267,7 @@ const functions = [
       { name: 'match_limit', type: 'int' },
       { name: 'type_input', type: 'page_type', default: 'NULL' }
     ],
-    returns: 'table(id, name, path, type, max_similarity, created_at)'
+    returns: 'table(id, name, path, type, max_similarity, created_at, is_read)'
   },
   {
     id: 'get_matched_page_sections', label: 'get_matched_page_sections()', x: 880, y: 520, color: '#10b981',
