@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deletePage } from "@/lib/actions"
 import { Page } from "@/lib/types"
-import { Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -42,9 +41,9 @@ export default function DeleteContentDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        className="flex items-start"
+        className="w-full text-left"
       >
-        <Trash2 className="w-4 h-4 text-red-500 hover:text-destructive" />
+        <span>Delete</span>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -73,7 +72,6 @@ export default function DeleteContentDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive text-foreground hover:bg-destructive/90"
             onClick={() => handleDelete(page.id)}
           >Delete</AlertDialogAction>
         </AlertDialogFooter>

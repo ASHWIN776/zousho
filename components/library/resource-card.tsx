@@ -157,14 +157,14 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleToggleRead}>
-              {isRead ? "Mark as unread" : "Mark as read"}
-            </DropdownMenuItem>
+          <DropdownMenuContent align="start">
             <DropdownMenuItem asChild>
               <Link href={path ?? `/library/${id}`} target={path ? "_blank" : "_self"}>
-                Open link
+                Open
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleToggleRead}>
+              {isRead ? "Mark as unread" : "Mark as read"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
