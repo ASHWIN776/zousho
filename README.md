@@ -1,8 +1,6 @@
 ## zousho
 Curate and share your taste of the internet.
 
-Demo [here](https://youtu.be/IM7XrKOlbWQ)
-
 Checkout the `.env.example` file to see the required environment variables.
 
 ### Setup
