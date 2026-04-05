@@ -1,5 +1,5 @@
 ## zousho
-Curate the internet by saving what catches your eye
+Curate and share your taste of the internet.
 
 Demo [here](https://youtu.be/IM7XrKOlbWQ)
 
