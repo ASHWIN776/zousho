@@ -16,6 +16,7 @@ import { Page } from "@/lib/types"
 import { Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
+import { Button } from "../ui/button"
 
 interface Props {
   page: Page
@@ -43,13 +44,11 @@ export default function DeleteContentDialog({
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger
-        className={variant === "button"
-          ? "inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-destructive hover:bg-accent hover:text-destructive"
-          : "w-full text-left"
-        }
-      >
-        {variant === "button" ? <><Trash2 className="h-4 w-4" /> Delete</> : <span>Delete</span>}
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="sm" >
+          <Trash2 />
+          Delete
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
