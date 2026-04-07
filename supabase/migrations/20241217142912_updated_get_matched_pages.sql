@@ -1,6 +1,6 @@
 -- This function is used to get the matched pages based on the query embedding, match limit, and page type(If NULL, all the page_types will be considered for the search).
 create or replace function get_matched_pages (
-  query_embedding vector(1024),
+  query_embedding extensions.vector(1024),
   match_limit int,
   type_input page_type DEFAULT NULL
 )

@@ -2,11 +2,11 @@
 ALTER TABLE pages ADD COLUMN is_read boolean NOT NULL DEFAULT false;
 
 -- Update get_matched_pages to include is_read
-drop function if exists get_matched_pages(text, vector(1024), int, page_type);
+drop function if exists get_matched_pages(text, extensions.vector(1024), int, page_type);
 
 create or replace function get_matched_pages (
   user_id_input text,
-  query_embedding vector(1024),
+  query_embedding extensions.vector(1024),
   match_limit int,
   type_input page_type DEFAULT NULL
 )

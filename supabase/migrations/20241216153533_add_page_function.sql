@@ -2,7 +2,7 @@ alter table pages alter column path drop not null;
 
 create type page_section_data as (
   content text,
-  embedding vector(1024)
+  embedding extensions.vector(1024)
 );
 
 create or replace function add_page (

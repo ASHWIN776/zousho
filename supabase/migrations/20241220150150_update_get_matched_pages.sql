@@ -1,9 +1,9 @@
-drop function if exists get_matched_pages(vector(1024), int, page_type);
+drop function if exists get_matched_pages(extensions.vector(1024), int, page_type);
 
 -- This function is used to get the matched pages based on the query embedding, match limit, and page type(If NULL, all the page_types will be considered for the search).
 create or replace function get_matched_pages (
   user_id_input text,
-  query_embedding vector(1024),
+  query_embedding extensions.vector(1024),
   match_limit int,
   type_input page_type DEFAULT NULL
 )

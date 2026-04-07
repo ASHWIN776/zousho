@@ -1,6 +1,6 @@
 create or replace function get_matched_page_sections(
   user_id_input text,
-  query_embedding vector(1024),
+  query_embedding extensions.vector(1024),
   match_limit int,
   type_input page_type DEFAULT NULL
 )

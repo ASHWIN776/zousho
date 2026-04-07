@@ -1,5 +1,5 @@
 create or replace function get_matched_pages (
-  query_embedding vector(1024),
+  query_embedding extensions.vector(1024),
   match_limit int
 )
 returns table (name text, path text, max_similarity float)
