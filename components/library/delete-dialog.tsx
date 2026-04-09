@@ -17,10 +17,11 @@ import { Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Button } from "../ui/button"
+import { DropdownMenuItem } from "../ui/dropdown-menu"
 
 interface Props {
   page: Page
-  variant?: "icon" | "button"
+  variant?: "icon" | "button" | "dropdown"
 }
 
 export default function DeleteContentDialog({
@@ -45,10 +46,17 @@ export default function DeleteContentDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" >
-          <Trash2 />
-          Delete
-        </Button>
+        {variant === "dropdown" ? (
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        ) : (
+          <Button variant="destructive" size="sm">
+            <Trash2 />
+            Delete
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
