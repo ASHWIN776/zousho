@@ -7,7 +7,7 @@ import { ActionResponse, ContentType, Page, PageSection } from "./types";
 import { revalidatePath } from "next/cache";
 import { PostgrestError } from "@supabase/supabase-js";
 import { auth } from '@clerk/nextjs/server'
-import { getChecksum } from "./helper";
+import { getChecksum, normalizeUrl } from "./helper";
 import splitter from "./splitter";
 import { FeatureExtractionOutput } from "@huggingface/inference";
 import { after } from "next/server";
@@ -37,53 +37,22 @@ export const scrapeUrl = async (url: string): Promise<{success: boolean, data: {
   }
 }
 
-export const checkDuplicate = async (content: string, type: ContentType): Promise<{isDuplicate: boolean, error: string | null, checksum: string | null}> => {
-  const supabase = await createClient();
-  const { userId } = await auth()
-
-  try {
-    const checksum = getChecksum(content);
-
-    const { data: existingPage, error: existingPageError } = await supabase
-    .from("pages")
-    .select()
-    .eq("user_id", userId)
-    .eq("type", type)
-    .eq("checksum", checksum)
-
-    if(existingPageError) throw existingPageError
-
-    return {
-      isDuplicate: existingPage.length > 0,
-      error: null,
-      checksum
-    };
-  } catch (error) {
-    console.error("Error checking for duplicates: ", error);
-    return {
-      isDuplicate: false,
-      error: "Failed to check for duplicates",
-      checksum: null
-    };
-  }
-}
-
 
 export const generateTextEmbedding = async (text: string) => {
   try {
     const textChunks = await splitter.splitText(text);
-  
+
     const processedData = await Promise.all(
       textChunks.map(async (chunk) => {
         const response = await getEmbedding(chunk);
-  
+
         return {
           content: chunk,
           embedding: response
         }
       })
     );
-  
+
     return processedData;
   } catch (error) {
     console.error("Error generating embeddings: ", error);
@@ -96,28 +65,87 @@ export const saveWebsite = async (markdown: string, title: string, url: string, 
   const { userId } = await auth()
 
   try {
-    const { data: pageId, error: addPageError } = await supabase.rpc("add_page", { 
-      user_id_input: userId,
-      name_input: title,
-      page_content: markdown, 
-      page_section_data_input: embeddings,
-      type_input: "website",
-      path_input: url,
-      checksum_input: checksum
-    })
-    .returns<number>();
+    const normalized = normalizeUrl(url);
 
-    if(addPageError) throw addPageError
+    // 1. Check if page exists globally by URL
+    const { data: existing, error: lookupError } = await supabase
+      .from("pages")
+      .select("id, checksum")
+      .eq("path", normalized)
+      .eq("type", "website")
+      .limit(1);
 
-    console.log("Embeddings Data added to the database");
+    if (lookupError) throw lookupError;
 
+    let pageId: number;
+
+    if (existing && existing.length > 0) {
+      pageId = existing[0].id;
+
+      // Check if user is already linked
+      const { data: link } = await supabase
+        .from("user_pages")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("page_id", pageId)
+        .limit(1);
+
+      if (link && link.length > 0) {
+        return { data: null, error: "duplicate" };
+      }
+
+      // Link user to existing page
+      const { error: linkError } = await supabase
+        .from("user_pages")
+        .insert({ user_id: userId, page_id: pageId });
+
+      if (linkError) throw linkError;
+
+      // If content changed, update page + re-embed
+      if (existing[0].checksum !== checksum) {
+        // Delete old sections and re-insert
+        await supabase.from("page_sections").delete().eq("page_id", pageId);
+
+        const { error: sectionsError } = await supabase.rpc("add_page_sections", {
+          page_id_input: pageId,
+          page_section_data_input: embeddings,
+        });
+        if (sectionsError) throw sectionsError;
+
+        const { error: updateError } = await supabase
+          .from("pages")
+          .update({ name: title, content: markdown, checksum, status: "ready" })
+          .eq("id", pageId);
+        if (updateError) throw updateError;
+      }
+    } else {
+      // 2. Create new page + link
+      const { data: newPageId, error: addPageError } = await supabase.rpc("add_page", {
+        name_input: title,
+        page_content: markdown,
+        page_section_data_input: embeddings,
+        type_input: "website",
+        path_input: normalized,
+        checksum_input: checksum
+      }).returns<number>();
+
+      if (addPageError) throw addPageError;
+      pageId = newPageId as number;
+
+      const { error: linkError } = await supabase
+        .from("user_pages")
+        .insert({ user_id: userId, page_id: pageId });
+      if (linkError) throw linkError;
+    }
+
+    // Fetch the page to return
     const { data: page, error: getPageError } = await supabase
-    .from("pages")
-    .select()
-    .eq("id", pageId)
-    .returns<Page[]>();
+      .from("pages")
+      .select()
+      .eq("id", pageId)
+      .returns<Page[]>();
 
-    if (getPageError) throw getPageError
+    if (getPageError) throw getPageError;
 
     revalidateLibrary();
 
@@ -127,7 +155,7 @@ export const saveWebsite = async (markdown: string, title: string, url: string, 
     }
   } catch (error) {
     console.error(error);
-    
+
     return {
       data: null,
       error: typeof error === "string" ? error : (error as PostgrestError).message
@@ -142,7 +170,9 @@ export const saveLink = async (url: string): Promise<ActionResponse<Page | null>
   console.log("[saveLink] Authenticated user:", userId);
 
   try {
-    // 1. Quick title fetch — only downloads <head>, aborts after
+    const normalized = normalizeUrl(url);
+
+    // 1. Quick title fetch
     console.log("[saveLink] Fetching metadata...");
     let title: string;
     try {
@@ -154,32 +184,76 @@ export const saveLink = async (url: string): Promise<ActionResponse<Page | null>
       console.log("[saveLink] Metadata fetch failed, using hostname:", title, metaError);
     }
 
-    // 2. Duplicate check by URL (fast)
-    console.log("[saveLink] Checking for duplicates...");
-    const { data: existing, error: dupError } = await supabase
+    // 2. Global duplicate check by URL
+    console.log("[saveLink] Checking for existing page...");
+    const { data: existing, error: lookupError } = await supabase
       .from("pages")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("path", url)
+      .select("id, status")
+      .eq("path", normalized)
       .eq("type", "website")
       .limit(1);
 
-    if (dupError) throw dupError;
+    if (lookupError) throw lookupError;
 
     if (existing && existing.length > 0) {
-      console.log("[saveLink] Duplicate found, aborting");
-      return { data: null, error: "duplicate" };
-    }
-    console.log("[saveLink] No duplicate found");
+      const existingPage = existing[0];
 
-    // 3. Insert minimal row with status = 'indexing'
-    console.log("[saveLink] Inserting page row...");
+      // Check if current user is already linked
+      const { data: link } = await supabase
+        .from("user_pages")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("page_id", existingPage.id)
+        .limit(1);
+
+      if (link && link.length > 0) {
+        console.log("[saveLink] User already linked to this page, returning duplicate");
+        return { data: null, error: "duplicate" };
+      }
+
+      // Link user to existing page
+      console.log("[saveLink] Linking user to existing page:", existingPage.id);
+      const { error: linkError } = await supabase
+        .from("user_pages")
+        .insert({ user_id: userId, page_id: existingPage.id });
+      if (linkError) throw linkError;
+
+      // Handle re-indexing based on status
+      if (existingPage.status === "ready") {
+        // Re-scrape in background to check for content changes
+        console.log("[saveLink] Page is ready, scheduling freshness check");
+        after(async () => {
+          await reindexIfStale(existingPage.id, url);
+        });
+      } else if (existingPage.status === "failed") {
+        // Retry indexing
+        console.log("[saveLink] Page previously failed, retrying indexing");
+        after(async () => {
+          await indexPage(existingPage.id, url);
+        });
+      }
+      // If 'indexing', do nothing — already in progress
+
+      // Fetch full page to return
+      const { data: page, error: fetchError } = await supabase
+        .from("pages")
+        .select()
+        .eq("id", existingPage.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      revalidateLibrary();
+      return { data: page as Page, error: null };
+    }
+
+    // 3. No existing page — create new one
+    console.log("[saveLink] Inserting new page...");
     const { data: page, error: insertError } = await supabase
       .from("pages")
       .insert({
-        user_id: userId,
         name: title,
-        path: url,
+        path: normalized,
         type: "website",
         status: "indexing",
         content: null,
@@ -191,7 +265,13 @@ export const saveLink = async (url: string): Promise<ActionResponse<Page | null>
     if (insertError) throw insertError;
     console.log("[saveLink] Page inserted with id:", page.id);
 
-    // 4. Schedule background indexing — runs AFTER the response is sent
+    // Link user
+    const { error: linkError } = await supabase
+      .from("user_pages")
+      .insert({ user_id: userId, page_id: page.id });
+    if (linkError) throw linkError;
+
+    // 4. Schedule background indexing
     console.log("[saveLink] Scheduling background indexing via after()");
     after(async () => {
       console.log("[saveLink:after] Background callback started for page:", page.id);
@@ -201,7 +281,6 @@ export const saveLink = async (url: string): Promise<ActionResponse<Page | null>
 
     revalidateLibrary();
 
-    // 5. Return immediately — client shows title + favicon
     console.log("[saveLink] Returning response to client");
     return { data: page as Page, error: null };
   } catch (error) {
@@ -210,6 +289,72 @@ export const saveLink = async (url: string): Promise<ActionResponse<Page | null>
       data: null,
       error: typeof error === "string" ? error : (error as PostgrestError).message,
     };
+  }
+};
+
+const reindexIfStale = async (pageId: number, url: string) => {
+  console.log("[reindexIfStale] Checking freshness for page:", pageId);
+  const supabase = await createClient();
+
+  try {
+    // Scrape current content
+    const { title, markdown, author } = await scrape(url);
+    const newChecksum = getChecksum(markdown);
+
+    // Compare with stored checksum
+    const { data: page } = await supabase
+      .from("pages")
+      .select("checksum")
+      .eq("id", pageId)
+      .single();
+
+    if (page?.checksum === newChecksum) {
+      console.log("[reindexIfStale] Content unchanged, skipping re-index");
+      return;
+    }
+
+    console.log("[reindexIfStale] Content changed, re-indexing page:", pageId);
+
+    // Mark as indexing
+    await supabase.from("pages").update({ status: "indexing" }).eq("id", pageId);
+
+    // Chunk + embed
+    const textChunks = await splitter.splitText(markdown);
+    const embeddings = await Promise.all(
+      textChunks.map(async (chunk) => {
+        const embedding = await getEmbedding(chunk);
+        return { content: chunk, embedding };
+      })
+    );
+
+    // Delete old sections and insert new ones
+    await supabase.from("page_sections").delete().eq("page_id", pageId);
+
+    const { error: sectionsError } = await supabase.rpc("add_page_sections", {
+      page_id_input: pageId,
+      page_section_data_input: embeddings,
+    });
+    if (sectionsError) throw sectionsError;
+
+    // Update page
+    const { error: updateError } = await supabase
+      .from("pages")
+      .update({
+        name: title,
+        content: markdown,
+        checksum: newChecksum,
+        status: "ready",
+        author,
+      })
+      .eq("id", pageId);
+
+    if (updateError) throw updateError;
+    console.log("[reindexIfStale] Page", pageId, "re-indexed successfully");
+
+    revalidateLibrary();
+  } catch (error) {
+    console.error("[reindexIfStale] Failed for page:", pageId, error);
+    await supabase.from("pages").update({ status: "failed" }).eq("id", pageId);
   }
 };
 
@@ -287,7 +432,6 @@ export const saveNote = async (title: string, note: string, checksum: string, em
     console.log("Saving the data to the database");
 
     const { data: pageId, error: addPageError } = await supabase.rpc("add_page", {
-      user_id_input: userId,
       name_input: title,
       page_content: note,
       page_section_data_input: embeddings,
@@ -298,6 +442,12 @@ export const saveNote = async (title: string, note: string, checksum: string, em
     .returns<number>();
 
     if (addPageError) throw addPageError
+
+    // Link user to the new note
+    const { error: linkError } = await supabase
+      .from("user_pages")
+      .insert({ user_id: userId, page_id: pageId });
+    if (linkError) throw linkError;
 
     console.log("Embeddings Data added to the database");
 
@@ -344,7 +494,7 @@ export const searchQuery = async (query: string, page_type: "all" | "website" | 
     if(error) throw error
 
     return data as Page[]
-    
+
   } catch (error) {
     console.error(error);
     return []
@@ -375,7 +525,7 @@ export const searchPageSections = async (query: string, page_type: "all" | "webs
       similarity
     }))
   } catch (error) {
-    console.error("Error in searchPageSections: ", error); 
+    console.error("Error in searchPageSections: ", error);
   }
 }
 
@@ -386,16 +536,25 @@ export const fetchPages = async (type: ContentType) => {
   try {
     const page_type = type === "all" ? ["website", "note"] : [type];
 
-    const { data: pages, error } = await supabase
-    .from("pages")
-    .select()
-    .eq("user_id", userId)
-    .in("type", page_type)
-    .order("created_at", { ascending: false })
+    const { data, error } = await supabase
+      .from("user_pages")
+      .select("is_read, note, page:pages(*)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
-    if (error) throw error
+    if (error) throw error;
 
-    return pages as Page[]
+    // Flatten: merge junction fields into each page
+    const pages = (data as any[] ?? [])
+      .filter((row) => row.page !== null)
+      .filter((row) => page_type.includes(row.page.type))
+      .map((row) => ({
+        ...row.page,
+        is_read: row.is_read,
+        note: row.note,
+      }));
+
+    return pages as Page[];
   } catch (error) {
     console.error(error);
     return []
@@ -407,9 +566,9 @@ export const toggleReadStatus = async (pageId: string, isRead: boolean) => {
   const { userId } = await auth();
 
   const { error } = await supabase
-    .from("pages")
+    .from("user_pages")
     .update({ is_read: isRead })
-    .eq("id", pageId)
+    .eq("page_id", pageId)
     .eq("user_id", userId);
 
   if (error) throw new Error("Failed to update read status");
@@ -422,19 +581,37 @@ export const deletePage = async (pageId: string): Promise<ActionResponse<Page | 
   const { userId } = await auth()
 
   try {
-    const { data, error } = await supabase
-    .from("pages")
-    .delete()
-    .eq("user_id", userId)
-    .eq("id", pageId)
-    .select()
+    // 1. Remove the user's link
+    const { error: unlinkError } = await supabase
+      .from("user_pages")
+      .delete()
+      .eq("user_id", userId)
+      .eq("page_id", pageId);
 
-    if (error) throw error
-    
+    if (unlinkError) throw unlinkError;
+
+    // 2. Check if any other users still reference this page
+    const { count, error: countError } = await supabase
+      .from("user_pages")
+      .select("id", { count: "exact", head: true })
+      .eq("page_id", pageId);
+
+    if (countError) throw countError;
+
+    // 3. If no references remain, delete the page itself (cascades to page_sections)
+    if (count === 0) {
+      const { error: deleteError } = await supabase
+        .from("pages")
+        .delete()
+        .eq("id", pageId);
+
+      if (deleteError) throw deleteError;
+    }
+
     revalidateLibrary();
-    
+
     return {
-      data: (data as Page[])[0],
+      data: null,
       error: null
     }
   } catch (error) {
@@ -451,11 +628,23 @@ export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: s
   const { userId } = await auth()
 
   try {
+    // Verify user has access via user_pages
+    const { data: link, error: linkError } = await supabase
+      .from("user_pages")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("page_id", pageId)
+      .limit(1);
+
+    if (linkError) throw linkError;
+    if (!link || link.length === 0) {
+      return { data: null, error: "Not found" };
+    }
+
     const { data, error } = await supabase
-    .from("pages")
-    .select("name, content, created_at, author")
-    .eq("user_id", userId)
-    .eq("id", pageId)
+      .from("pages")
+      .select("name, content, created_at, author")
+      .eq("id", pageId);
 
     if (error) throw error
 
@@ -470,4 +659,22 @@ export const fetchPage = async (pageId: string): Promise<ActionResponse<{name: s
       error: typeof error === "string" ? error : (error as PostgrestError).message
     }
   }
+}
+
+export const updatePageNote = async (pageId: string, note: string | null) => {
+  const supabase = await createClient();
+  const { userId } = await auth();
+
+  const { error } = await supabase
+    .from("user_pages")
+    .update({
+      note,
+      note_updated_at: new Date().toISOString(),
+    })
+    .eq("page_id", pageId)
+    .eq("user_id", userId);
+
+  if (error) throw new Error("Failed to update note");
+
+  revalidateLibrary();
 }

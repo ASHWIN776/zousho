@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import { Loader2, AlertTriangle, MessageSquare, Check, ChevronUp } from "lucide-react";
+import { Loader2, AlertTriangle, Check, ChevronUp, ExternalLink, MoreHorizontal } from "lucide-react";
 import { Page, PageStatus } from "@/lib/types";
 import { format } from 'date-fns'
 
@@ -11,10 +11,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { usePageStatus } from "@/hooks/use-page-status";
-import { toggleReadStatus } from "@/lib/actions";
-import { useState } from "react";
+import { toggleReadStatus, updatePageNote } from "@/lib/actions";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
 const AVATAR_COLORS = [
@@ -74,7 +75,7 @@ interface Props {
 }
 
 export default function ResourceRow({ page, showSimilarity }: Props) {
-  const { name: title, path, max_similarity: similarity, created_at, id, status: initialStatus, is_read: initialIsRead, author } = page;
+  const { name: title, path, max_similarity: similarity, created_at, id, status: initialStatus, is_read: initialIsRead, author, note: initialNote } = page;
   const similarityPercentage = similarity ? (similarity * 100).toFixed(2) : undefined;
   const faviconUrl = getFaviconUrl(path);
   const domain = getDomain(path);
@@ -82,6 +83,34 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
   const avatarColor = getAvatarColor(author ?? domain ?? title);
   const [isRead, setIsRead] = useState(initialIsRead);
   const [isOpen, setIsOpen] = useState(false);
+  const [note, setNote] = useState(initialNote ?? "");
+  const [savedNote, setSavedNote] = useState(initialNote ?? "");
+
+  const hasNoteChanged = note !== savedNote;
+
+  const handleSaveNote = useCallback(async () => {
+    try {
+      await updatePageNote(id, note || null);
+      setSavedNote(note);
+      toast.success("Note saved");
+    } catch {
+      toast.error("Failed to save note");
+    }
+  }, [id, note]);
+
+  const handleCancelNote = useCallback(() => {
+    setNote(savedNote);
+  }, [savedNote]);
+
+  const handleNoteKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSaveNote();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancelNote();
+    }
+  }, [handleSaveNote, handleCancelNote]);
 
   // Subscribe to realtime status updates only for pages still indexing
   const realtimeStatus = usePageStatus(initialStatus === "indexing" ? id : null);
@@ -160,24 +189,53 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
         <div className="p-3 pt-0 sm:p-4 sm:pt-0 space-y-3">
           {/* Note section */}
           <div className="space-y-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</span>
             <Textarea
               placeholder="What did you think? What's worth remembering..."
               className="min-h-[100px] text-sm resize-none"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={handleNoteKeyDown}
               onClick={(e) => e.stopPropagation()}
             />
           </div>
 
-          <p className="text-xs text-muted-foreground">Previewed in list · included in digests</p>
-
-          {/* Action buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleToggleRead}>
-              <Check className="h-4 w-4" />
-              {isRead ? "Mark as unread" : "Mark as read"}
-            </Button>
-            <div className="ml-auto">
-              <DeleteContentDialog page={page} variant="button" />
+          {/* Save / Cancel row */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">⌘ ↵ to save · esc to cancel</span>
+            <div className="flex items-center gap-2">
+              {hasNoteChanged && (
+                <Button variant="outline" size="sm" onClick={handleCancelNote}>
+                  Cancel
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleSaveNote} disabled={!hasNoteChanged}>
+                Save note
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleToggleRead}>
+                    <Check className="h-4 w-4" />
+                    {isRead ? "Mark as unread" : "Mark as read"}
+                  </DropdownMenuItem>
+                  {path && (
+                    <DropdownMenuItem asChild>
+                      <Link href={path} target="_blank">
+                        <ExternalLink className="h-4 w-4" />
+                        Open link
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <DeleteContentDialog page={page} variant="dropdown" />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

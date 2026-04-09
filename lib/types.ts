@@ -10,8 +10,9 @@ export interface Page {
   created_at: string;
   type: ContentType;
   status: PageStatus;
-  is_read: boolean;
   author: string | null;
+  is_read: boolean;
+  note: string | null;
 }
 
 export interface ResultType {

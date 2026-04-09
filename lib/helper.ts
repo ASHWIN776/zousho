@@ -28,6 +28,10 @@ export const cleanUserPrompt = async (prompt: string) => {
   return text;
 }
 
+export const normalizeUrl = (url: string): string => {
+  return url.replace(/\/+$/, "");
+}
+
 export const getChecksum = (str: string) => {
   const hash = crypto.createHash('sha256');
   hash.update(str);
