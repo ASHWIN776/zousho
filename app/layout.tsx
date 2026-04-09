@@ -1,6 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
-import "@/styles/globals.css";
+import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkThemeProvider } from "@/components/clerk-theme-provider";
 
