@@ -17,7 +17,7 @@ export default async function ResourceResults({
   // If there are no pages in the library
   if(pages.length === 0) {
     return (
-      <div className="text-center text-white">
+      <div className="text-center">
         {
           query ? (
             <span>
