@@ -214,25 +214,25 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="min-w-35">
                   <DropdownMenuItem onClick={handleToggleRead}>
-                    <Check className="h-4 w-4" />
+                    <Check />
                     {isRead ? "Mark as unread" : "Mark as read"}
                   </DropdownMenuItem>
                   {path && (
                     <DropdownMenuItem asChild>
                       <Link href={path} target="_blank">
-                        <ExternalLink className="h-4 w-4" />
+                        <ExternalLink />
                         Open link
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <DeleteContentDialog page={page} variant="dropdown" />
+                    <DeleteContentDialog page={page}/>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

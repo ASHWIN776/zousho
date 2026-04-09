@@ -16,17 +16,14 @@ import { Page } from "@/lib/types"
 import { Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Button } from "../ui/button"
 import { DropdownMenuItem } from "../ui/dropdown-menu"
 
 interface Props {
   page: Page
-  variant?: "icon" | "button" | "dropdown"
 }
 
 export default function DeleteContentDialog({
   page,
-  variant = "icon",
 }: Props) {
 
   const handleDelete = async (id: Page["id"]) => {
@@ -46,17 +43,10 @@ export default function DeleteContentDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        {variant === "dropdown" ? (
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        ) : (
-          <Button variant="destructive" size="sm">
-            <Trash2 />
-            Delete
-          </Button>
-        )}
+        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -85,6 +75,7 @@ export default function DeleteContentDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            variant="destructive"
             onClick={() => handleDelete(page.id)}
           >Delete</AlertDialogAction>
         </AlertDialogFooter>
