@@ -21,7 +21,7 @@ export default async function Page({
     <div className="flex-1 px-4 py-8">
     <div className="space-y-8">
       <h1 className="text-4xl font-semibold">
-        <span className="bg-gradient-to-r text-foreground">Library</span>
+        <span className="bg-linear-to-r text-foreground">Library</span>
       </h1>
 
       {/* Smart Bar */}

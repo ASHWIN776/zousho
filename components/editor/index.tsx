@@ -30,7 +30,7 @@ const TipTapEditor = ({ onChange, content = '', setCanSave }: Props) => {
     editorProps: {
       attributes: {
         class: cn(
-          'prose prose-stone dark:prose-invert prose-base focus:outline-none'
+          'prose prose-stone dark:prose-invert prose-base focus:outline-hidden'
         ),
       },
     },
@@ -51,7 +51,7 @@ const TipTapEditor = ({ onChange, content = '', setCanSave }: Props) => {
 
   return (
     <div 
-      className="relative min-h-[800px] w-full max-w-screen-lg border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg dark:bg-zinc-800/50 dark:border-zinc-700 p-12 cursor-text" 
+      className="relative min-h-[800px] w-full max-w-(--breakpoint-lg) border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg dark:bg-zinc-800/50 dark:border-zinc-700 p-12 cursor-text" 
       onClick={handleContainerClick}
     >
       <div className="text-xs text-muted-foreground absolute top-4 right-4">

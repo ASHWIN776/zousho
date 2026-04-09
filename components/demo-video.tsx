@@ -29,7 +29,7 @@ export function DemoVideo() {
           onClick={handlePlay}
           className="absolute inset-0 flex items-center justify-center group"
         >
-          <div className="flex items-center justify-center size-14 rounded-full bg-foreground/10 group-hover:bg-foreground/20 backdrop-blur-sm border border-border transition-colors">
+          <div className="flex items-center justify-center size-14 rounded-full bg-foreground/10 group-hover:bg-foreground/20 backdrop-blur-xs border border-border transition-colors">
             <Play className="size-6 fill-foreground text-foreground ml-0.5" />
           </div>
         </button>
