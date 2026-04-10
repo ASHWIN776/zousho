@@ -36,7 +36,7 @@ export default async function ResourceResults({
 
   // If there are pages in the library
   return (
-    <ItemGroup className="gap-0">
+    <ItemGroup className="gap-0 has-data-[size=sm]:gap-0 has-data-[size=xs]:gap-0">
       {pages.map((page, index) => (
         <div key={index}>
           {index > 0 && <ItemSeparator />}

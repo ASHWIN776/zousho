@@ -186,7 +186,7 @@ export default function ResourceRow({ page, showSimilarity }: Props) {
       </Item>
 
       <CollapsibleContent>
-        <div className="pr-3 sm:pr-4 space-y-3">
+        <div className="p-3 pt-0 sm:p-4 sm:pt-0 space-y-3">
           {/* Note section */}
           <div className="space-y-2">
             <Textarea
