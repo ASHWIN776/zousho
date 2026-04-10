@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "../ui/input";
 
 import { useState, useCallback } from "react";
-import { Search, Link, Loader2, Check, AlertTriangle } from "lucide-react";
+import { Search, Link, Loader2, Check, AlertTriangle, CircleX } from "lucide-react";
 import { saveLink } from "@/lib/actions";
 
 type Mode = "idle" | "search" | "save";
@@ -41,6 +41,15 @@ export default function SmartBar() {
     params.set("type", 'all');
     replace(`${pathname}?${params.toString()}`);
   }, [input, searchParams, pathname, replace]);
+
+  const handleClear = useCallback(() => {
+    setInput("");
+    const params = new URLSearchParams(searchParams);
+    params.delete("query");
+    params.delete("type");
+    const qs = params.toString();
+    replace(qs ? `${pathname}?${qs}` : pathname);
+  }, [searchParams, pathname, replace]);
 
   const handleSave = useCallback(async () => {
     setSaveState("saving");
@@ -122,9 +131,18 @@ export default function SmartBar() {
               }
             }}
             placeholder="Search or paste a URL to save"
-            className={`pl-9 ${borderClass} md:text-base md:h-10`}
+            className={`pl-9 ${input && !isSaving ? "pr-9" : ""} ${borderClass} md:text-base md:h-10`}
             disabled={isSaving}
           />
+          {input && !isSaving && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <CircleX className="w-4 h-4 text-destructive" />
+            </button>
+          )}
         </div>
       </form>
 
