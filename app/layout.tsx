@@ -34,7 +34,7 @@ export default function RootLayout({
         >
           <ClerkThemeProvider>
             <TooltipProvider>
-              <main className="h-screen bg-background text-foreground">
+              <main className="h-dvh bg-background text-foreground">
                 {children}
                 <Toaster
                   richColors
